@@ -1,0 +1,18 @@
+import { Typography } from '@mui/material';
+import { PaperBackground } from '../paper-background/PaperBackground';
+
+export interface PageHeaderProps {
+  title: string;
+}
+
+export const PageHeader = (props: PageHeaderProps) => {
+  const { title } = props;
+
+  return (
+    <PaperBackground padding="24px 50px" width="80vw" sx={{ background: '#f5f5f5' }}>
+      <Typography component="h1" borderRadius="50px" textAlign="left">
+        {title}
+      </Typography>
+    </PaperBackground>
+  );
+};
