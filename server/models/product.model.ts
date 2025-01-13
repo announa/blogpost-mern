@@ -1,4 +1,5 @@
-import { model, Schema } from 'mongoose';
+import { ObjectId } from 'bson';
+import { model, Schema, SchemaType } from 'mongoose';
 
 const ProductSchema = new Schema(
   {
@@ -16,7 +17,10 @@ const ProductSchema = new Schema(
       required: [true, 'Please enter the price'],
     },
     image: {
-      type: String,
+      // id: ObjectId,
+      type: Schema.Types.ObjectId,
+      ref: 'Image',
+      default: null,
       required: false,
     },
   },
