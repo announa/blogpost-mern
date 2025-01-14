@@ -3,53 +3,52 @@ import { Request, Response } from 'express';
 import { Model, MongooseError } from 'mongoose';
 import { v4 as uuid4 } from 'uuid';
 import { Image } from '../models/image.model';
-import { Product } from '../models/product.model';
+import { Post } from '../models/post.model';
 
 type UnwrapModel<T> = T extends Model<infer U> ? U : never;
-type IProduct = UnwrapModel<typeof Product>;
+type IPost = UnwrapModel<typeof Post>;
 type IImage = { _id: ObjectId; name: string; contentType: string; file: Buffer };
-type ProductWithImage = Omit<IProduct, 'image' | '_id'> & {
+type PostWithImage = Omit<IPost, 'image' | '_id'> & {
   _id: ObjectId;
   image: IImage | null | undefined;
 };
-type IUpdateProductData = Omit<IProduct, 'image'> & {image: IProduct['image'] | 'null'}
+type IUpdatePostData = Omit<IPost, 'image'> & {image: IPost['image'] | 'null'}
 
-const getLogResult = (data: ProductWithImage) =>
+const getLogResult = (data: PostWithImage) =>
   `${JSON.stringify({
     ...data,
     image: data.image ? { ...data.image, file: JSON.stringify(data.image?.file).slice(0, 50) } : null,
   })}`;
 
-const mapProduct = (product: ProductWithImage) => {
-  const image = product?.image?.file?.toString('base64');
-  const { _id, ...productCopy } = product;
-  const plainProduct = productCopy;
-  if (!product.image) {
+const mapPost = (post: PostWithImage) => {
+  const image = post?.image?.file?.toString('base64');
+  const { _id, ...postCopy } = post;
+  if (!post.image) {
     return {
-      ...productCopy,
+      ...postCopy,
       id: _id,
       image: null,
     };
   } else {
-    const { _id: _imageId, ...imageCopy } = product.image;
+    const { _id: _imageId, ...imageCopy } = post.image;
     return {
-      ...productCopy,
+      ...postCopy,
       id: _id,
       image: {
         ...imageCopy,
         id: _imageId,
-        data: `data:${productCopy?.image?.contentType};base64,${image}`,
+        data: `data:${postCopy?.image?.contentType};base64,${image}`,
       },
     };
   }
 };
 
-export const getProducts = async (req: Request, res: Response) => {
+export const getPosts = async (req: Request, res: Response) => {
   try {
-    const products = (await Product.find({}).lean().populate('image')) as ProductWithImage[];
-    const mappedProducts = products.map((product) => mapProduct(product));
-    console.log(`Products loaded: ${mappedProducts.map((product) => product.id)}`);
-    res.status(200).json(mappedProducts);
+    const posts = (await Post.find({}).lean().populate('image')) as PostWithImage[];
+    const mappedPosts = posts.map((post) => mapPost(post));
+    console.log(`Posts loaded: ${mappedPosts.map((post) => post.id)}`);
+    res.status(200).json(mappedPosts);
   } catch (error: unknown) {
     const mongooseError = error as MongooseError;
     console.error(mongooseError);
@@ -57,23 +56,23 @@ export const getProducts = async (req: Request, res: Response) => {
   }
 };
 
-export const getProduct = async (req: Request, res: Response) => {
+export const getPost = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    console.log(`Requested product: ${id}`);
-    const product = (await Product.findById(id).lean().populate('image')) as ProductWithImage;
-    if (!product) {
-      console.error(`Product with id ${id} could not be found`);
-      res.status(404).json({ message: `Product with id ${id} could not be found` });
+    console.log(`Requested post: ${id}`);
+    const post = (await Post.findById(id).lean().populate('image')) as PostWithImage;
+    if (!post) {
+      console.error(`Post with id ${id} could not be found`);
+      res.status(404).json({ message: `Post with id ${id} could not be found` });
     } else {
-      console.log(`Product loaded: ${getLogResult(product)}`);
-      const mappedProduct = mapProduct(product);
-      res.status(200).json(mappedProduct);
+      console.log(`Post loaded: ${getLogResult(post)}`);
+      const mappedPost = mapPost(post);
+      res.status(200).json(mappedPost);
     }
   } catch (error: unknown) {
     const mongooseError = error as MongooseError;
     if ((mongooseError.message as string).includes('Cast to ObjectId failed for value')) {
-      mongooseError.message = `Product with id ${id} could not be found`;
+      mongooseError.message = `Post with id ${id} could not be found`;
     }
     console.error(mongooseError);
     res.status(500).json({ message: mongooseError.message });
@@ -95,8 +94,8 @@ const createImage = async (image: Express.Multer.File) => {
   return createdImage
 }
 
-export const createProduct = async (req: Request, res: Response) => {
-  console.log(`Product to add: ${JSON.stringify(req.body)}`);
+export const createPost = async (req: Request, res: Response) => {
+  console.log(`Post to add: ${JSON.stringify(req.body)}`);
   try {
     let imageId = null;
     const image = req.file
@@ -105,9 +104,9 @@ export const createProduct = async (req: Request, res: Response) => {
       imageId = createdImage._id;
       console.log(`Image successfully created:\n ${createdImage}`);
     }
-    const product = await Product.create({ ...req.body, image: imageId });
-    console.log(`Product successfully created:\n ${product}`);
-    res.status(200).json(product);
+    const post = await Post.create({ ...req.body, image: imageId });
+    console.log(`Post successfully created:\n ${post}`);
+    res.status(200).json(post);
   } catch (error: unknown) {
     const mongooseError = error as MongooseError;
     console.error(mongooseError);
@@ -115,13 +114,13 @@ export const createProduct = async (req: Request, res: Response) => {
   }
 };
 
-const updateProductData = async (id: ObjectId, data: IUpdateProductData, res: Response) => {
-  const updatedProduct = await Product.findByIdAndUpdate(id, data, { new: true });
-  console.log('updated product: ', updatedProduct)
-  if (!updatedProduct) {
-    res.status(404).json({ message: `Product with id ${id} could not be found and updated` });
+const updatePostData = async (id: ObjectId, data: IUpdatePostData, res: Response) => {
+  const updatedPost = await Post.findByIdAndUpdate(id, data, { new: true });
+  console.log('updated post: ', updatedPost)
+  if (!updatedPost) {
+    res.status(404).json({ message: `Post with id ${id} could not be found and updated` });
   }
-  return updatedProduct
+  return updatedPost
 }
 
 const updateImage = async (id: ObjectId, file: Express.Multer.File, res: Response) => {
@@ -136,25 +135,22 @@ const updateImage = async (id: ObjectId, file: Express.Multer.File, res: Respons
 
 const deleteImage = async (id: ObjectId, res: Response) => {
   console.log('Deleting image')
-  const deletedImage = await Product.findByIdAndDelete(id);
+  const deletedImage = await Post.findByIdAndDelete(id);
   console.log('deleted image: ', deletedImage)
-  // if (!deletedImage) {
-  //   res.status(404).json({ message: `Image with id ${id} could not be found and deleted` });
-  // }
   return deletedImage;
 };
 
-export const updateProduct = async (req: Request, res: Response) => {
-  const data = req.body as IUpdateProductData;
+export const updatePost = async (req: Request, res: Response) => {
+  const data = req.body as IUpdatePostData;
   const { id } = req.params;
   const imageToUpdate = req.file;
   console.log(`Data to update: ${JSON.stringify(data, null, 4)}`);
   console.log(`Image to update: ${JSON.stringify(imageToUpdate, null, 4)}`);
   try {
-    const currentProduct = await Product.findById(id);
-    const currentImageId = currentProduct?.image?._id;
+    const currentPost = await Post.findById(id);
+    const currentImageId = currentPost?.image?._id;
     let createdImageId = null
-    console.log('currentProduct: ', currentProduct);
+    console.log('currentPost: ', currentPost);
     if (data.image && data.image === 'null') {
       data.image = null;
     }
@@ -170,42 +166,42 @@ export const updateProduct = async (req: Request, res: Response) => {
     if (createdImageId){
       data.image = createdImageId
     }
-    const product = await updateProductData(id as unknown as ObjectId, data, res)
-    res.status(200).json(product);
+    const post = await updatePostData(id as unknown as ObjectId, data, res)
+    res.status(200).json(post);
   } catch (error: unknown) {
     const mongooseError = error as MongooseError;
     console.error(mongooseError);
     if ((mongooseError.message as string).includes('Cast to ObjectId failed for value')) {
-      mongooseError.message = `Product with id ${id} could not be found`;
+      mongooseError.message = `Post with id ${id} could not be found`;
     }
     res.status(500).json({ message: mongooseError.message });
   }
 };
 
-export const deleteProduct = async (req: Request, res: Response) => {
+export const deletePost = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    const product = await Product.findByIdAndDelete(id, req.body);
-    if (!product) {
-      res.status(404).json({ message: `Product with id ${id} could not be found` });
+    const post = await Post.findByIdAndDelete(id, req.body);
+    if (!post) {
+      res.status(404).json({ message: `Post with id ${id} could not be found` });
     } else {
-      console.log(`Product with id ${id} successfully deleted`);
-      const imageId = product?.image?._id;
+      console.log(`Post with id ${id} successfully deleted`);
+      const imageId = post?.image?._id;
       if (imageId) {
         const deletedImage = await Image.findByIdAndDelete(imageId);
         if (!deletedImage) {
-          console.error(`The product's image with id ${imageId} could not be deleted`);
-          res.status(404).json({ message: `The product's image with id ${imageId} could not be deleted` });
+          console.error(`The post's image with id ${imageId} could not be deleted`);
+          res.status(404).json({ message: `The post's image with id ${imageId} could not be deleted` });
           return;
         }
-        console.log(`Product image with id ${imageId} successfully deleted`);
+        console.log(`Post image with id ${imageId} successfully deleted`);
       }
-      res.status(200).json({ message: 'Product successfully deleted', product: product });
+      res.status(200).json({ message: 'Post successfully deleted', post: post });
     }
   } catch (error: unknown) {
     const mongooseError = error as MongooseError;
     if ((mongooseError.message as string).includes('Cast to ObjectId failed for value')) {
-      mongooseError.message = `Product with id ${id} could not be found`;
+      mongooseError.message = `Post with id ${id} could not be found`;
     }
     console.error(mongooseError);
     res.status(500).json({ message: mongooseError.message });

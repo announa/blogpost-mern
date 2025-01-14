@@ -1,0 +1,95 @@
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import { Box, CircularProgress } from '@mui/material';
+import axios from 'axios';
+import { useSnackbar } from 'notistack';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Button } from '../../components/button/Button';
+import { PageContainer } from '../../components/page-container/PageContainer';
+import { PageHeader } from '../../components/page-header/PageHeader';
+import { PaperBackground } from '../../components/paper-background/PaperBackground';
+import { PaperCard } from '../../components/paper-card/PaperCard';
+import { PostImage } from '../../components/post-image/PostImage';
+import { routes } from '../../config/navigation/navigation';
+import { Post as IPost } from '../../types/types';
+import { handleAxiosError } from '../../utils/error-handling/errorHandling';
+import sanitize from 'sanitize-html';
+
+export const Post = () => {
+  const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const [post, setPost] = useState<IPost | null>(null);
+  const [loading, setLoading] = useState(true);
+  const getPost = async () => {
+    try {
+      const post = await axios.get<IPost>(`${import.meta.env.VITE_POSTS_URL}/${id}`);
+      return post.data;
+    } catch (error: unknown) {
+      handleAxiosError(error, enqueueSnackbar);
+    }
+  };
+
+  useEffect(() => {
+    getPost().then((data) => {
+      if (data) {
+        setPost(data);
+      }
+      setLoading(false);
+    });
+  }, []);
+
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`${import.meta.env.VITE_POSTS_URL}/${id}`);
+      enqueueSnackbar('Post successfully deleted', { variant: 'success' });
+      navigate(routes.posts.route);
+    } catch (error: unknown) {
+      handleAxiosError(error, enqueueSnackbar);
+    }
+  };
+
+  const handleUpdate = () => {
+    navigate(`${routes.updatePost.baseRoute}/${id}`);
+  };
+
+  return (
+    <PageContainer>
+      {loading ? <PageHeader title="Loading..." /> : <PageHeader title={post?.title ?? 'Post not found'} />}
+      <PaperBackground flex={1}>
+        <Box width="100%" maxWidth="700px" height="100%">
+          <PaperCard>
+            {loading ? (
+              <Box height="100%" display="flex" justifyContent="center" alignItems="center">
+                <CircularProgress />
+              </Box>
+            ) : (
+              <>
+                <Box>
+                  <PostImage src={post?.image?.data} imageProps={{ alt: post?.title }} />
+                </Box>
+                <Box flex="1">
+                  <p>title: {post?.title}</p>
+                  <p>author: {post?.author} </p>
+                  <p>summary: {post?.summary}</p>
+                  <p
+                    dangerouslySetInnerHTML={post?.content ? { __html: sanitize(post.content) } : undefined}
+                  />
+                </Box>
+              </>
+            )}
+          </PaperCard>
+          <Box display="flex" justifyContent="space-between" marginTop="36px">
+            <Button startIcon={<DeleteIcon />} onClick={handleDelete}>
+              Delete Post
+            </Button>
+            <Button startIcon={<EditIcon />} onClick={handleUpdate}>
+              Edit Post
+            </Button>
+          </Box>
+        </Box>
+      </PaperBackground>
+    </PageContainer>
+  );
+};

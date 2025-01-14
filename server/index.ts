@@ -1,9 +1,9 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import mongoose, { MongooseError } from 'mongoose';
-import productsRoutes from './routes/products.route';
 import cors from 'cors';
 import multer from 'multer';
+import postsRoutes from './routes/posts.route'
 
 
 dotenv.config();
@@ -23,7 +23,7 @@ app.use(
   })
 );
 
-app.use('/api/products', productsRoutes);
+app.use('/api/posts', postsRoutes);
 
 app.get('/', (req, res) => {
   res.send('Server running');

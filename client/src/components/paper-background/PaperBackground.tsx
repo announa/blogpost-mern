@@ -10,7 +10,7 @@ export type PaperBackgroundProps = PaperProps & {
 
 export const PaperBackground = styled(Paper)<PaperBackgroundProps>(({ width, padding, height, minHeight, flex }) => ({
   padding: padding ?? '50px',
-  width: width ?? '80vw',
+  width: width ?? '100%',
   height: height ?? 'unset',
   background: '#f5f5f5',
   minHeight: minHeight ?? 'unset',

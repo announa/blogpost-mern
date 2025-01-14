@@ -1,7 +1,12 @@
 import { styled } from '@mui/material';
+import { SnackbarProvider } from 'notistack';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { Sidebar } from './components/sidebar/Sidebar';
+import { routes } from './config/navigation/navigation';
 import { Dashboard } from './pages/dashboard/Dashboard';
-import { AddProduct } from './pages/add-product/AddProduct';
+import { EditPost } from './pages/edit-post/EditPost';
+import { Post } from './pages/post/Post';
+import { Posts } from './pages/posts/Posts';
 
 const Content = styled('div')({
   height: '100vh',
@@ -9,21 +14,28 @@ const Content = styled('div')({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  padding: '50px',
+  gap: '24px',
+  padding: '10px',
   overflow: 'hidden',
 });
 
 export const App = () => {
   return (
     <>
-      <Content>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/add-product" element={<AddProduct />} />
-          </Routes>
-        </BrowserRouter>
-      </Content>
+      <SnackbarProvider>
+        <Content>
+          <BrowserRouter>
+            <Sidebar />
+            <Routes>
+              <Route path={routes.dashboard.route} element={<Dashboard />} />
+              <Route path={routes.addPost.route} element={<EditPost />} />
+              <Route path={routes.posts.route} element={<Posts />} />
+              <Route path={routes.post.route} element={<Post />} />
+              <Route path={routes.updatePost.route} element={<EditPost />} />
+            </Routes>
+          </BrowserRouter>
+        </Content>
+      </SnackbarProvider>
     </>
   );
 };

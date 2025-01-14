@@ -9,8 +9,8 @@ export const PageHeader = (props: PageHeaderProps) => {
   const { title } = props;
 
   return (
-    <PaperBackground padding="24px 50px" width="80vw" sx={{ background: '#f5f5f5' }}>
-      <Typography component="h1" borderRadius="50px" textAlign="left">
+    <PaperBackground padding="24px 50px" width="100%" sx={{ background: '#f5f5f5' }}>
+      <Typography component="h1" variant="h5" borderRadius="50px" textAlign="left">
         {title}
       </Typography>
     </PaperBackground>
