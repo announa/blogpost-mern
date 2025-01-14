@@ -12,6 +12,7 @@ type ProductWithImage = Omit<IProduct, 'image' | '_id'> & {
   _id: ObjectId;
   image: IImage | null | undefined;
 };
+type IUpdateProductData = Omit<IProduct, 'image'> & {image: IProduct['image'] | 'null'}
 
 const getLogResult = (data: ProductWithImage) =>
   `${JSON.stringify({
@@ -62,8 +63,8 @@ export const getProduct = async (req: Request, res: Response) => {
     console.log(`Requested product: ${id}`);
     const product = (await Product.findById(id).lean().populate('image')) as ProductWithImage;
     if (!product) {
-      console.error(`Product with id ${id} could not be found`)
-      res.status(404).json({ message: `Product with id ${id} could not be found`});
+      console.error(`Product with id ${id} could not be found`);
+      res.status(404).json({ message: `Product with id ${id} could not be found` });
     } else {
       console.log(`Product loaded: ${getLogResult(product)}`);
       const mappedProduct = mapProduct(product);
@@ -79,23 +80,30 @@ export const getProduct = async (req: Request, res: Response) => {
   }
 };
 
+const createImage = async (image: Express.Multer.File) => {
+  const fileName = image.originalname;
+  console.log(fileName);
+  const extension = fileName.split('.').pop();
+  const contentType = image.mimetype;
+  console.log('contentType', contentType);
+  const createdImage = await Image.create({
+    name: `${uuid4()}.${extension}`,
+    contentType,
+    file: image.buffer,
+  });
+  console.log(`Image successfully created:\n ${createdImage}`);
+  return createdImage
+}
+
 export const createProduct = async (req: Request, res: Response) => {
   console.log(`Product to add: ${JSON.stringify(req.body)}`);
   try {
     let imageId = null;
-    if (req.file) {
-      const fileName = req.file.originalname;
-      console.log(fileName);
-      const extension = fileName.split('.').pop();
-      const contentType = req.file.mimetype;
-      console.log('contentType', contentType);
-      const image = await Image.create({
-        name: `${uuid4()}.${extension}`,
-        contentType,
-        file: req.file.buffer,
-      });
-      imageId = image._id;
-      console.log(`Image successfully created:\n ${image}`);
+    const image = req.file
+    if (image) {
+      const createdImage = await createImage(image)
+      imageId = createdImage._id;
+      console.log(`Image successfully created:\n ${createdImage}`);
     }
     const product = await Product.create({ ...req.body, image: imageId });
     console.log(`Product successfully created:\n ${product}`);
@@ -107,33 +115,63 @@ export const createProduct = async (req: Request, res: Response) => {
   }
 };
 
+const updateProductData = async (id: ObjectId, data: IUpdateProductData, res: Response) => {
+  const updatedProduct = await Product.findByIdAndUpdate(id, data, { new: true });
+  console.log('updated product: ', updatedProduct)
+  if (!updatedProduct) {
+    res.status(404).json({ message: `Product with id ${id} could not be found and updated` });
+  }
+  return updatedProduct
+}
+
+const updateImage = async (id: ObjectId, file: Express.Multer.File, res: Response) => {
+  console.log('Updating image')
+  const updatedImage = await Image.findByIdAndUpdate(id, file, { new: true });
+  console.log('updated image: ', updatedImage)
+  if (!updatedImage) {
+    res.status(404).json({ message: `Image with id ${id} could not be found and updated` });
+  }
+  return updatedImage;
+};
+
+const deleteImage = async (id: ObjectId, res: Response) => {
+  console.log('Deleting image')
+  const deletedImage = await Product.findByIdAndDelete(id);
+  console.log('deleted image: ', deletedImage)
+  // if (!deletedImage) {
+  //   res.status(404).json({ message: `Image with id ${id} could not be found and deleted` });
+  // }
+  return deletedImage;
+};
+
 export const updateProduct = async (req: Request, res: Response) => {
-  // const upload = multer();
-  // upload.none();
-  const data = req.body;
+  const data = req.body as IUpdateProductData;
   const { id } = req.params;
-  console.log(`Data to update: ${JSON.stringify(data, null, 4)}`);
-  console.log(`Image Data to update: ${typeof data.image}`);
   const imageToUpdate = req.file;
+  console.log(`Data to update: ${JSON.stringify(data, null, 4)}`);
   console.log(`Image to update: ${JSON.stringify(imageToUpdate, null, 4)}`);
   try {
     const currentProduct = await Product.findById(id);
+    const currentImageId = currentProduct?.image?._id;
+    let createdImageId = null
     console.log('currentProduct: ', currentProduct);
     if (data.image && data.image === 'null') {
       data.image = null;
     }
-    const product = await Product.findByIdAndUpdate(id, data, { new: true });
-    if (!product) {
-      res.status(404).json({ message: `Product with id ${id} could not be found` });
+    if (currentImageId && imageToUpdate) {
+      await updateImage(currentImageId, imageToUpdate, res);
     }
-    if (currentProduct?.image?._id) {
-      const deletedImage = await Product.findByIdAndDelete(currentProduct.image._id);
-      if (!deletedImage) {
-        res.status(404).json({ message: `Product with id ${id} could not be found` });
-      }
+    if(!currentImageId && imageToUpdate){
+      createdImageId = (await createImage(imageToUpdate))._id
     }
-    console.log(`Product successfully updated:\n ${product}`);
-    res.status(200).json({ message: 'Product successfully updated', product: product });
+    if (currentImageId && data.image === null) {
+      await deleteImage(currentImageId, res);
+    }
+    if (createdImageId){
+      data.image = createdImageId
+    }
+    const product = await updateProductData(id as unknown as ObjectId, data, res)
+    res.status(200).json(product);
   } catch (error: unknown) {
     const mongooseError = error as MongooseError;
     console.error(mongooseError);
