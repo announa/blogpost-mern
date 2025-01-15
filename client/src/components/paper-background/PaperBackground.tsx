@@ -8,12 +8,17 @@ export type PaperBackgroundProps = PaperProps & {
   flex?: number;
 };
 
-export const PaperBackground = styled(Paper)<PaperBackgroundProps>(({ width, padding, height, minHeight, flex }) => ({
-  padding: padding ?? '50px',
-  width: width ?? '100%',
-  height: height ?? 'unset',
-  // background: '#f5f5f5',
-  minHeight: minHeight ?? 'unset',
-  overflowY: 'auto',
-  flex: flex?? 'unset',
-}));
+export const PaperBackground = styled(Paper)<PaperBackgroundProps>(
+  ({ width, padding, height, minHeight, flex }) => ({
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: padding ?? '50px',
+    width: width ?? '100%',
+    height: height ?? 'unset',
+    // background: '#f5f5f5',
+    minHeight: minHeight ?? 'unset',
+    overflowY: 'auto',
+    flex: flex ?? 'unset',
+  })
+);

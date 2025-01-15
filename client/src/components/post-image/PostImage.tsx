@@ -4,7 +4,6 @@ import { ImgHTMLAttributes } from 'react';
 
 export const StyledImage = styled('img')({
   width: '100%',
-  borderRadius: '15px',
   aspectRatio: '2',
   objectFit: 'cover',
 });
@@ -18,13 +17,15 @@ export const PostImage = (props: PostImageProps) => {
   const { boxProps, imageProps, src } = props;
   return (
     <Box
-      {...boxProps}
+      borderRadius="4px"
       display="flex"
       alignItems="center"
       justifyContent="center"
       width="100%"
       sx={{ aspectRatio: '2' }}
       position="relative"
+      overflow="hidden"
+      {...boxProps}
     >
       {src ? (
         <StyledImage {...imageProps} src={src} />

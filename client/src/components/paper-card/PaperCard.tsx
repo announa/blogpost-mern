@@ -6,9 +6,10 @@ type PaperCardProps = CardProps & {
   height?: string;
   aspectRatio?: string;
   center?: boolean;
+  padding?: string;
 };
 
-export const PaperCard = styled(Card)<PaperCardProps>(({ width, maxWidth, height, aspectRatio, center }) => ({
+export const PaperCard = styled(Card)<PaperCardProps>(({ width, maxWidth, height, aspectRatio, center, padding }) => ({
   width: width ?? '100%',
   maxWidth: maxWidth ?? 'unset',
   height: height ?? 'unset',
@@ -18,7 +19,7 @@ export const PaperCard = styled(Card)<PaperCardProps>(({ width, maxWidth, height
   justifyContent: center ? 'center' : 'unset',
   flexDirection: 'column',
   gap: '24px',
-  borderRadius: '20px',
-  padding: '18px',
+  borderRadius: '4px',
+  padding: padding ?? '18px',
   background: 'white'
 }));

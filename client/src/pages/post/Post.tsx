@@ -5,16 +5,16 @@ import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import sanitize from 'sanitize-html';
 import { Button } from '../../components/button/Button';
 import { PageContainer } from '../../components/page-container/PageContainer';
 import { PageHeader } from '../../components/page-header/PageHeader';
 import { PaperBackground } from '../../components/paper-background/PaperBackground';
-import { PaperCard } from '../../components/paper-card/PaperCard';
+import { Author, Content, Date, PostInformation, Summary } from '../../components/post-content/PostContent';
 import { PostImage } from '../../components/post-image/PostImage';
 import { routes } from '../../config/navigation/navigation';
 import { Post as IPost } from '../../types/types';
 import { handleAxiosError } from '../../utils/error-handling/errorHandling';
-import sanitize from 'sanitize-html';
 
 export const Post = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -56,30 +56,40 @@ export const Post = () => {
 
   return (
     <PageContainer>
-      {loading ? <PageHeader title="Loading..." /> : <PageHeader title={post?.title ?? 'Post not found'} />}
-      <PaperBackground flex={1}>
+      <PaperBackground flex={1} sx={{ position: 'relative' }}>
         <Box width="100%" maxWidth="700px" height="100%">
-          <PaperCard>
-            {loading ? (
-              <Box height="100%" display="flex" justifyContent="center" alignItems="center">
-                <CircularProgress />
+          {/* <PaperCard> */}
+          {loading ? (
+            <PageHeader title="Loading..." />
+          ) : (
+            <PageHeader title={post?.title ?? 'Post not found'} />
+          )}
+          {loading ? (
+            <Box height="100%" display="flex" justifyContent="center" alignItems="center">
+              <CircularProgress />
+            </Box>
+          ) : (
+            <>
+              <Box marginBottom="24px">
+                <PostImage
+                  src={post?.image?.data}
+                  imageProps={{ alt: post?.title }}
+                  boxProps={{ borderRadius: '0 !important' }}
+                />
               </Box>
-            ) : (
-              <>
-                <Box>
-                  <PostImage src={post?.image?.data} imageProps={{ alt: post?.title }} />
-                </Box>
-                <Box flex="1">
-                  <p>title: {post?.title}</p>
-                  <p>author: {post?.author} </p>
-                  <p>summary: {post?.summary}</p>
-                  <p
-                    dangerouslySetInnerHTML={post?.content ? { __html: sanitize(post.content) } : undefined}
-                  />
-                </Box>
-              </>
-            )}
-          </PaperCard>
+              <Box flex="1">
+                <PostInformation>
+                  <Author>{post?.author}</Author>
+                  <Date>{post?.createdAt}</Date>{' '}
+                </PostInformation>
+                <Summary>{post?.summary}</Summary>
+                <Content
+                  dangerouslySetInnerHTML={post?.content ? { __html: sanitize(post.content) } : undefined}
+                />
+              </Box>
+            </>
+          )}
+          {/* </PaperCard> */}
           <Box display="flex" justifyContent="space-between" marginTop="36px">
             <Button startIcon={<DeleteIcon />} onClick={handleDelete}>
               Delete Post

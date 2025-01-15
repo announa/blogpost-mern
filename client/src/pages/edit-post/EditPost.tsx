@@ -182,8 +182,8 @@ export const EditPost = () => {
 
   return (
     <PageContainer>
-      <PageHeader title={editMode ? 'Edit Post' : 'Add a new Post'} />
       <PaperBackground flex={1}>
+      <PageHeader title={editMode ? 'Edit Post' : 'Add a new Post'} />
         {loading ? (
           <Box height="100%" display="flex" alignItems="center" justifyContent="center">
             <CircularProgress />
@@ -220,10 +220,10 @@ export const EditPost = () => {
               width="100%"
               sx={{ aspectRatio: '2' }}
               position="relative"
-              border='1px solid #cdcdcd'
-              borderRadius='4px'
+              border={currentImage ? 'none' : '1px solid #cdcdcd'}
+              borderRadius="4px"
             >
-              <Box >
+              <Box>
                 <PostImage src={currentImage} />
                 {currentImage && (
                   <Tooltip title="Delete Image">
@@ -241,10 +241,14 @@ export const EditPost = () => {
                 )}
               </Box>
             </Box>
-
-            <Button type="submit" color="primary" disabled={isSubmitDisabled}>
-              {editMode ? 'Update Post' : 'Add Post'}
-            </Button>
+            <Box display='flex' justifyContent='space-between'>
+              <Button variant='outlined' onClick={() => navigate(routes.posts.route)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitDisabled}>
+                {editMode ? 'Update Post' : 'Add Post'}
+              </Button>
+            </Box>
           </StyledForm>
         )}
       </PaperBackground>
