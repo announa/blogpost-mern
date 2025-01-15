@@ -5,7 +5,6 @@ const SidebarContainer = styled(Paper)({
   width: '25vw',
   maxWidth: '250px',
   height: '100%',
-  background: '#f5f5f5',
   overflowY: 'auto',
   display: 'flex',
   flexDirection: 'column',

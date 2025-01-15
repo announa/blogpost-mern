@@ -1,4 +1,4 @@
-import { styled } from '@mui/material';
+import { styled, ThemeProvider } from '@mui/material';
 import { SnackbarProvider } from 'notistack';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Sidebar } from './components/sidebar/Sidebar';
@@ -7,6 +7,7 @@ import { Dashboard } from './pages/dashboard/Dashboard';
 import { EditPost } from './pages/edit-post/EditPost';
 import { Post } from './pages/post/Post';
 import { Posts } from './pages/posts/Posts';
+import { theme } from './style/theme';
 
 const Content = styled('div')({
   height: '100vh',
@@ -21,7 +22,7 @@ const Content = styled('div')({
 
 export const App = () => {
   return (
-    <>
+    <ThemeProvider theme={theme}>
       <SnackbarProvider>
         <Content>
           <BrowserRouter>
@@ -36,7 +37,7 @@ export const App = () => {
           </BrowserRouter>
         </Content>
       </SnackbarProvider>
-    </>
+    </ThemeProvider>
   );
 };
 

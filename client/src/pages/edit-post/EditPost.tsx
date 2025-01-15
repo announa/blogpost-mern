@@ -1,5 +1,5 @@
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, CircularProgress, IconButton, styled, TextField, Tooltip, Typography } from '@mui/material';
+import { Box, CircularProgress, IconButton, styled, TextField, Tooltip } from '@mui/material';
 import axios from 'axios';
 import { isEqual } from 'lodash';
 import { useSnackbar } from 'notistack';
@@ -190,9 +190,6 @@ export const EditPost = () => {
           </Box>
         ) : (
           <StyledForm onSubmit={handleSubmit}>
-            <Typography marginBottom="24px" component="h2" variant="h6">
-              Post Information
-            </Typography>
             <TextField
               label="Title"
               value={postToUpload.title}
@@ -223,8 +220,10 @@ export const EditPost = () => {
               width="100%"
               sx={{ aspectRatio: '2' }}
               position="relative"
+              border='1px solid #cdcdcd'
+              borderRadius='4px'
             >
-              <Box>
+              <Box >
                 <PostImage src={currentImage} />
                 {currentImage && (
                   <Tooltip title="Delete Image">

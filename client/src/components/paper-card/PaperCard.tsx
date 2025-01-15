@@ -20,4 +20,5 @@ export const PaperCard = styled(Card)<PaperCardProps>(({ width, maxWidth, height
   gap: '24px',
   borderRadius: '20px',
   padding: '18px',
+  background: 'white'
 }));

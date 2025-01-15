@@ -4,7 +4,7 @@ import ReactQuill from 'react-quill';
 import { PostToEdit } from '../../pages/edit-post/EditPost';
 
 const StyledEditor = styled(ReactQuill)({
-  borderRadius: '5px',
+  borderRadius: '4px',
   backgroundColor: 'white',
   border: '1px solid #ccc',
   '.ql-toolbar, .ql-container': {
