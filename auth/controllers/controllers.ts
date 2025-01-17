@@ -1,12 +1,11 @@
-import { Model, MongooseError } from 'mongoose';
-import { User } from '../models/user.model';
+import bcrypt from 'bcrypt';
 import { ObjectId } from 'bson';
+import { Request, Response } from 'express';
 import fs from 'fs';
 import jwt, { SignOptions } from 'jsonwebtoken';
-import { Request, Response } from 'express';
+import { Model, MongooseError } from 'mongoose';
 import { loginInputParser, registerInputParser } from '../helpers/parameterParser';
-import bcrypt from 'bcrypt';
-import { verify } from 'crypto';
+import { User } from '../models/user.model';
 
 type UnwrapModel<T> = T extends Model<infer U> ? U : never;
 type IUser = UnwrapModel<typeof User> & { _id: ObjectId };
