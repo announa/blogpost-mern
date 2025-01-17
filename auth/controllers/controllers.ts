@@ -4,8 +4,7 @@ import { ObjectId } from 'bson';
 import fs from 'fs';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { Request, Response } from 'express';
-import { z } from 'zod';
-import validator from 'validator';
+import { loginInputParser, registerInputParser } from '../helpers/parameterParser';
 
 type UnwrapModel<T> = T extends Model<infer U> ? U : never;
 type IUser = UnwrapModel<typeof User> & { _id: ObjectId };
@@ -13,25 +12,26 @@ type IUser = UnwrapModel<typeof User> & { _id: ObjectId };
 type GetUserIdInput = {
   email?: string;
   userName?: string;
+  password?: string;
 };
 
-const getUserId = async ({ email, userName }: GetUserIdInput) => {
+const getUserId = async ({ email, userName, password }: GetUserIdInput) => {
+  console.log('Retrieving user from DB')
   let user: IUser[] | null = null;
-  if (email) {
-    user = await User.find({ email: email });
-  } else if (userName) {
-    user = await User.find({ userName: userName });
-  }
-  if (!user) {
-    throw new MongooseError('No user found for the provided login information');
+  user = await User.find({ email: email, password: password });
+  if (user.length === 0) {
+    throw new MongooseError('Incorrect login data');
   } else if (user.length > 1) {
-    throw new MongooseError('More than one user found for the provided login information');
+    throw new MongooseError('More than one user found for the provided login data');
   } else {
+    console.log('Found user in DB:')
+    console.log(user)
     return user[0]._id;
   }
 };
 
 const generateJwt = (userId: ObjectId) => {
+  console.log('generating token')
   const signOptions: SignOptions = {
     expiresIn: '30s',
     algorithm: 'RS256',
@@ -45,12 +45,9 @@ const generateJwt = (userId: ObjectId) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  const loginInformation = { email: req.body.email, userName: req.body.userName };
-  if (!loginInformation.email && !loginInformation.userName) {
-    console.error('Invalid request. Email or user name has to be provided');
-    res.status(401).json({ message: 'Invalid request' });
-  }
+  console.log('logging user in');
   try {
+    const loginInformation = loginInputParser.parse(req.body);
     const userId = await getUserId(loginInformation);
     const token = generateJwt(userId);
     if (!token) {
@@ -65,23 +62,14 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const inputParser = z.object({
-  firstName: z.string().nonempty(),
-  lastName: z.string().nonempty(),
-  userName: z.string().nonempty(),
-  email: z.string().refine((value) => validator.isEmail(value)),
-  password: z.string().nonempty(),
-});
-
 export const register = async (req: Request, res: Response) => {
-  const signUpInformation = inputParser.parse(req.body);
   try {
+    const signUpInformation = registerInputParser.parse(req.body);
     const newUser = await User.create(signUpInformation);
     if (!newUser) {
       res.status(500).json({ message: 'Could not create new user' });
-    } else {
-      res.status(200).json(newUser);
     }
+    res.status(200).json(newUser);
   } catch (error: unknown) {
     const mongooseError = error as MongooseError;
     console.error(mongooseError);

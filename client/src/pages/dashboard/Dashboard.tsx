@@ -4,6 +4,7 @@ import { PageHeader } from '../../components/page-header/PageHeader';
 import { PaperBackground } from '../../components/paper-background/PaperBackground';
 import { PaperCard } from '../../components/paper-card/PaperCard';
 import { routes } from '../../config/navigation/navigation';
+import { Link } from '../../components/link/Link';
 
 export const Dashboard = () => {
   const actions = [
@@ -17,11 +18,11 @@ export const Dashboard = () => {
         <Grid2 container spacing={6}>
           {actions.map((action) => (
             <Grid2 key={action.title} size={6}>
-              <a href={action.route}>
+              <Link to={action.route}>
                 <PaperCard height="200px" center>
                   {action.title}
                 </PaperCard>
-              </a>
+              </Link>
             </Grid2>
           ))}
         </Grid2>

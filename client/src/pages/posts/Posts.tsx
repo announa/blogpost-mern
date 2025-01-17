@@ -12,6 +12,7 @@ import { routes } from '../../config/navigation/navigation';
 import { Post } from '../../types/types';
 import { handleAxiosError } from '../../utils/error-handling/errorHandling';
 import { Author, Date, Summary } from '../../components/post-content/PostContent';
+import { Link } from '../../components/link/Link';
 
 export const Posts = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -36,11 +37,11 @@ export const Posts = () => {
   return (
     <PageContainer>
       <PaperBackground flex={1}>
-      <PageHeader title="Posts" />
+        <PageHeader title="Posts" />
         <Grid2 container spacing={6}>
           {posts.map((post) => (
             <Grid2 size={{ xs: 12, md: 6, lg: 4 }}>
-              <a href={`${routes.post.baseRoute}/${post.id}`}>
+              <Link to={`${routes.post.baseRoute}/${post.id}`}>
                 <PaperCard>
                   {post.image ? (
                     <PostImage src={post.image?.data} imageProps={{ alt: post.title }} />
@@ -56,13 +57,13 @@ export const Posts = () => {
                     </Box>
                   )}
                   <Box>
-                  {post.title}
-                  <Author>{post.author}</Author>
-                  <Date>{post.createdAt}</Date>
-                  <Summary>{post.summary}</Summary>
+                    {post.title}
+                    <Author>{post.author}</Author>
+                    <Date>{post.createdAt}</Date>
+                    <Summary>{post.summary}</Summary>
                   </Box>
                 </PaperCard>
-              </a>
+              </Link>
             </Grid2>
           ))}
         </Grid2>
