@@ -8,6 +8,7 @@ const Container = styled('div')({
   justifyContent: 'center',
   alignItems: 'center',
   gap: '36px',
+  position: 'relative'
 });
 
 export interface PageContainerProps {

@@ -15,7 +15,6 @@ import { routes } from '../../config/navigation/navigation';
 import { User, useUserContext } from '../../context/UserContext';
 import { handleAxiosError, handleZodSafeParseError } from '../../utils/errorHandling';
 import { StorageToken } from '../../utils/getToken';
-import { saveTokenInLocalStorage } from '../../utils/localStorage';
 
 type LoginResult = {
   accessToken: StorageToken;

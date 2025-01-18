@@ -10,6 +10,7 @@ export type PaperBackgroundProps = PaperProps & {
 
 export const PaperBackground = styled(Paper)<PaperBackgroundProps>(
   ({ width, padding, height, minHeight, flex }) => ({
+    position: 'relative',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',

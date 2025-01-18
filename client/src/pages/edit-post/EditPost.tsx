@@ -8,14 +8,13 @@ import 'react-quill/dist/quill.snow.css';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../components/button/Button';
 import { Editor } from '../../components/editor/Editor';
-import { PageContainer } from '../../components/page-container/PageContainer';
 import { PageHeader } from '../../components/page-header/PageHeader';
-import { PaperBackground } from '../../components/paper-background/PaperBackground';
 import { PostImage } from '../../components/post-image/PostImage';
 import { routes } from '../../config/navigation/navigation';
 import { Post } from '../../types/types';
 import { handleAxiosError } from '../../utils/errorHandling';
 import { getAccessToken } from '../../utils/getToken';
+import { ContentContainer } from '../../components/content-container/ContentContainer';
 
 const StyledForm = styled('form')(({ theme }) => ({
   display: 'flex',
@@ -197,8 +196,7 @@ export const EditPost = () => {
   };
 
   return (
-    <PageContainer>
-      <PaperBackground flex={1}>
+      <ContentContainer>
         <PageHeader title={editMode ? 'Edit Post' : 'Add a new Post'} />
         {loading ? (
           <Box height="100%" display="flex" alignItems="center" justifyContent="center">
@@ -267,7 +265,6 @@ export const EditPost = () => {
             </Box>
           </StyledForm>
         )}
-      </PaperBackground>
-    </PageContainer>
+      </ContentContainer>
   );
 };

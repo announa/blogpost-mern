@@ -11,6 +11,9 @@ import { theme } from './style/theme';
 import { Register } from './pages/register/Register';
 import { Login } from './pages/login/Login';
 import { UserContextProvider } from './context/UserContext';
+import { PageContainer } from './components/page-container/PageContainer';
+import { NavBar } from './components/nav/NavBar';
+import { PaperBackground } from './components/paper-background/PaperBackground';
 
 const Content = styled('div')({
   height: '100vh',
@@ -31,16 +34,20 @@ export const App = () => {
         <SnackbarProvider>
           <Content>
             <BrowserRouter>
-              <Sidebar />
-              <Routes>
-                <Route path={routes.dashboard.route} element={<Dashboard />} />
-                <Route path={routes.addPost.route} element={<EditPost />} />
-                <Route path={routes.posts.route} element={<Posts />} />
-                <Route path={routes.post.route} element={<Post />} />
-                <Route path={routes.updatePost.route} element={<EditPost />} />
-                <Route path={routes.login.route} element={<Login />} />
-                <Route path={routes.register.route} element={<Register />} />
-              </Routes>
+              <PageContainer>
+                <PaperBackground flex={1}>
+                  <NavBar />
+                  <Routes>
+                    <Route path={routes.dashboard.route} element={<Dashboard />} />
+                    <Route path={routes.addPost.route} element={<EditPost />} />
+                    <Route path={routes.posts.route} element={<Posts />} />
+                    <Route path={routes.post.route} element={<Post />} />
+                    <Route path={routes.updatePost.route} element={<EditPost />} />
+                    <Route path={routes.login.route} element={<Login />} />
+                    <Route path={routes.register.route} element={<Register />} />
+                  </Routes>
+                </PaperBackground>
+              </PageContainer>
             </BrowserRouter>
           </Content>
         </SnackbarProvider>
