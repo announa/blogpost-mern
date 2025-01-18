@@ -15,10 +15,10 @@ type GetUserIdInput = {
   password: string;
 };
 
-const getUserId = async ({ email, password }: GetUserIdInput) => {
+const getUser = async ({ email, password }: GetUserIdInput) => {
   console.log('Retrieving user from DB');
   let user: IUser | null = null;
-  const result = await User.find({ email: email });
+  const result = await User.find({ email: email }).lean();
   if (result.length === 0) {
     throw new MongooseError('Incorrect login data');
   } else if (result.length > 1) {
@@ -26,12 +26,13 @@ const getUserId = async ({ email, password }: GetUserIdInput) => {
   }
   user = result[0];
   console.log('Found user in DB');
+  const { password: dbUserPassword, _id, ...userData } = user;
   try {
-    const passwordMatches = await bcrypt.compare(password, user.password);
+    const passwordMatches = await bcrypt.compare(password, dbUserPassword);
     if (!passwordMatches) {
       throw new MongooseError('Incorrect login data');
     }
-    return user._id;
+    return { ...userData, id: _id };
   } catch (error) {
     console.error(error);
     throw new MongooseError('Incorrect login data');
@@ -56,12 +57,12 @@ export const login = async (req: Request, res: Response) => {
   console.log('logging user in');
   try {
     const loginInformation = loginInputParser.parse(req.body);
-    const userId = await getUserId(loginInformation);
-    const token = generateJwt(userId);
+    const user = await getUser(loginInformation);
+    const token = generateJwt(user.id);
     if (!token) {
       res.status(500).json({ message: 'Login failed' });
     } else {
-      res.status(200).json(token);
+      res.status(200).json({ accessToken: token, data: user });
     }
   } catch (error: unknown) {
     const mongooseError = error as MongooseError;

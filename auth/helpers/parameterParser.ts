@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import validator from 'validator';
 
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&()"#^-]{8,}$/;
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*+?&()"#^-])[A-Za-z\d@$!%*+?&()"#^-]{8,}$/;
 
 export const loginInputParser = z.object({
   email: z.string().refine((value) => validator.isEmail(value), { message: 'A valid email is required' }),

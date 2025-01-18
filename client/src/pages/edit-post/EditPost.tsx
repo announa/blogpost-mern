@@ -14,7 +14,7 @@ import { PaperBackground } from '../../components/paper-background/PaperBackgrou
 import { PostImage } from '../../components/post-image/PostImage';
 import { routes } from '../../config/navigation/navigation';
 import { Post } from '../../types/types';
-import { handleAxiosError } from '../../utils/error-handling/errorHandling';
+import { handleAxiosError } from '../../utils/error-handling/axiosError';
 
 const StyledForm = styled('form')(({ theme }) => ({
   display: 'flex',
@@ -137,9 +137,11 @@ export const EditPost = () => {
 
   const createPost = async (formData: FormData) => {
     try {
+      const token = localStorage.getItem('accessToken');
       const result = await axios.post(import.meta.env.VITE_POSTS_URL, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
         },
       });
       enqueueSnackbar('Post successfully added', { variant: 'success' });
@@ -151,13 +153,15 @@ export const EditPost = () => {
 
   const updatePost = async (formData: FormData) => {
     try {
+      const token = localStorage.getItem('accessToken');
       const result = await axios.put(`${import.meta.env.VITE_POSTS_URL}/${id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
         },
       });
       enqueueSnackbar('Post successfully updated', { variant: 'success' });
-      return result.data._id;
+      return result.data._id as string;
     } catch (error: unknown) {
       handleAxiosError(error, enqueueSnackbar, 'Post could not be updated');
     }
@@ -172,7 +176,9 @@ export const EditPost = () => {
     } else {
       postId = await updatePost(formData);
     }
-    navigate(`${routes.post.baseRoute}/${postId}`);
+    if (postId) {
+      navigate(`${routes.post.baseRoute}/${postId}`);
+    }
   };
 
   const handleDeleteImage = () => {
@@ -183,7 +189,7 @@ export const EditPost = () => {
   return (
     <PageContainer>
       <PaperBackground flex={1}>
-      <PageHeader title={editMode ? 'Edit Post' : 'Add a new Post'} />
+        <PageHeader title={editMode ? 'Edit Post' : 'Add a new Post'} />
         {loading ? (
           <Box height="100%" display="flex" alignItems="center" justifyContent="center">
             <CircularProgress />
@@ -241,8 +247,8 @@ export const EditPost = () => {
                 )}
               </Box>
             </Box>
-            <Box display='flex' justifyContent='space-between'>
-              <Button variant='outlined' onClick={() => navigate(routes.posts.route)}>
+            <Box display="flex" justifyContent="space-between">
+              <Button variant="outlined" onClick={() => navigate(routes.posts.route)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitDisabled}>

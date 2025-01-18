@@ -14,7 +14,7 @@ import { Author, Content, Date, PostInformation, Summary } from '../../component
 import { PostImage } from '../../components/post-image/PostImage';
 import { routes } from '../../config/navigation/navigation';
 import { Post as IPost } from '../../types/types';
-import { handleAxiosError } from '../../utils/error-handling/errorHandling';
+import { handleAxiosError } from '../../utils/error-handling/axiosError';
 
 export const Post = () => {
   const { enqueueSnackbar } = useSnackbar();

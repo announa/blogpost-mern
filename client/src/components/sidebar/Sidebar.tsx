@@ -19,7 +19,7 @@ export const Sidebar = () => {
     <SidebarContainer>
       <Box display="flex" flexDirection="column" gap="36px">
         {sidebarRoutes.map((route) => (
-          <Link to={route.route} color="black">
+          <Link key={route.route} to={route.route} color="black">
             {route.name}
           </Link>
         ))}

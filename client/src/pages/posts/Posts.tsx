@@ -10,7 +10,7 @@ import { PaperCard } from '../../components/paper-card/PaperCard';
 import { PostImage } from '../../components/post-image/PostImage';
 import { routes } from '../../config/navigation/navigation';
 import { Post } from '../../types/types';
-import { handleAxiosError } from '../../utils/error-handling/errorHandling';
+import { handleAxiosError } from '../../utils/error-handling/axiosError';
 import { Author, Date, Summary } from '../../components/post-content/PostContent';
 import { Link } from '../../components/link/Link';
 
@@ -40,7 +40,7 @@ export const Posts = () => {
         <PageHeader title="Posts" />
         <Grid2 container spacing={6}>
           {posts.map((post) => (
-            <Grid2 size={{ xs: 12, md: 6, lg: 4 }}>
+            <Grid2 key={post.id} size={{ xs: 12, md: 6, lg: 4 }}>
               <Link to={`${routes.post.baseRoute}/${post.id}`}>
                 <PaperCard>
                   {post.image ? (

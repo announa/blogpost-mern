@@ -11,9 +11,10 @@ import { PageContainer } from '../../components/page-container/PageContainer';
 import { PageHeader } from '../../components/page-header/PageHeader';
 import { PaperCard } from '../../components/paper-card/PaperCard';
 import { routes } from '../../config/navigation/navigation';
-import { handleAxiosError } from '../../utils/error-handling/errorHandling';
+import { handleAxiosError } from '../../utils/error-handling/axiosError';
+import { handleZodSafeParseError } from '../../utils/error-handling/zodSafeParseError';
 
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&()"#^-]{8,}$/;
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*+?&()"#^-])[A-Za-z\d@$!%*+?&()"#^-]{8,}$/;
 
 const StyledForm = styled('form')({
   width: '100%',
@@ -54,7 +55,7 @@ const initialError = {
   password: {
     success: false,
     message:
-      'Invalid password. The password must contain at least 8 characters with at least one lower case and one upper case letter, one number and one special character @$!%*?&()"#^-',
+      'Invalid password. The password must contain at least 8 characters with at least one lower case and one upper case letter, one number and one special character @$!%*+?&()"#^-',
   },
   repeatPassword: {
     success: false,
@@ -98,13 +99,14 @@ export const Register = () => {
   }, [userData, repeatPassword]);
 
   useEffect(() => {
-    const allErrorFields = Object.keys(error);
-    const activeErrorFields = validatedUserData.error?.issues.map((issue) => issue.path[0]);
-    const noErrorFields = allErrorFields.filter((field) => !activeErrorFields?.includes(field));
-    let newError = { ...error };
-    for (const key of noErrorFields) {
-      newError = { ...newError, [key]: '' };
-    }
+    const newError = handleZodSafeParseError(error, validatedUserData)
+    // const allErrorFields = Object.keys(error);
+    // const activeErrorFields = validatedUserData.error?.issues.map((issue) => issue.path[0]);
+    // const noErrorFields = allErrorFields.filter((field) => !activeErrorFields?.includes(field));
+    // let newError = { ...error };
+    // for (const key of noErrorFields) {
+    //   newError = { ...newError, [key]: '' };
+    // }
     setError(newError);
   }, [validatedUserData]);
 

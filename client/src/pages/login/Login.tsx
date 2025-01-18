@@ -2,6 +2,7 @@ import { styled, TextField, Typography, useTheme } from '@mui/material';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import validator from 'validator';
 import { z } from 'zod';
 import { Button } from '../../components/button/Button';
@@ -11,7 +12,9 @@ import { PageContainer } from '../../components/page-container/PageContainer';
 import { PageHeader } from '../../components/page-header/PageHeader';
 import { PaperCard } from '../../components/paper-card/PaperCard';
 import { routes } from '../../config/navigation/navigation';
-import { handleAxiosError } from '../../utils/error-handling/errorHandling';
+import { User, useUserContext } from '../../context/UserContext';
+import { handleAxiosError } from '../../utils/error-handling/axiosError';
+import { handleZodSafeParseError } from '../../utils/error-handling/zodSafeParseError';
 
 const StyledForm = styled('form')({
   width: '100%',
@@ -26,43 +29,69 @@ const initialUserData = {
   password: '',
 };
 
-const emailParser = z
-  .string()
-  .refine((value) => validator.isEmail(value), { message: 'A valid email is required' });
+const loginInputParser = z.object({
+  email: z.string().refine((value) => validator.isEmail(value), { message: 'A valid email is required' }),
+  password: z.string().nonempty({ message: 'Password is required' }),
+});
 
 export const Login = () => {
   const theme = useTheme();
+  const userContext = useUserContext();
+  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const [userData, setUserData] = useState(initialUserData);
   const [error, setError] = useState(initialUserData);
 
-  const validatedEmail = useMemo(() => emailParser.safeParse(userData.email), [userData.email]);
+  if (!userContext) {
+    throw new Error('useUserContext must be used within a UserContextProvider');
+  }
+
+  const validatedUserData = useMemo(() => loginInputParser.safeParse(userData), [userData]);
 
   useEffect(() => {
-    if (validatedEmail.data) {
-      setError({ ...error, email: '' });
-    }
-  }, [validatedEmail, error]);
+    const newError = handleZodSafeParseError(error, validatedUserData);
+    setError(newError);
+  }, [validatedUserData]);
 
-  useEffect(() => {
-    if (userData.password.length > 0) {
-      setError({ ...error, password: '' });
+  const verifyInput = (field: keyof typeof error) => {
+    const issue = validatedUserData.error?.issues.find((issue) => issue.path[0] === field);
+    if (issue) {
+      setError({ ...error, [field]: issue.message });
     }
-  }, [userData.password, error]);
+  };
 
-  const isSubmitDisabled = !validatedEmail.data || !userData.password;
+  const isSubmitDisabled = !validatedUserData.data;
+
+  const handleAuthResponse = (token: string, user: User) => {
+    if (!token) {
+      enqueueSnackbar('Login failed. Please try again later', { variant: 'error' });
+      setUserData(initialUserData);
+      setError(initialUserData);
+    } else {
+      localStorage.setItem('accessToken', token);
+      userContext.setUser(user);
+      enqueueSnackbar('Successfully logged in', { variant: 'success' });
+    }
+  };
 
   const handleLogin = async () => {
     try {
-      await axios.post(`${import.meta.env.VITE_AUTH_URL}${routes.login.route}`, userData, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      enqueueSnackbar('Successfully loged in', { variant: 'success' });
+      const result = await axios.post(
+        `${import.meta.env.VITE_AUTH_URL}${routes.login.route}`,
+        validatedUserData.data,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      const token = result.data.accessToken;
+      const user = result.data.data;
+      handleAuthResponse(token, user);
     } catch (error: unknown) {
       handleAxiosError(error, enqueueSnackbar);
     }
+    navigate(routes.posts.route);
   };
 
   const handleChange = (
@@ -86,9 +115,7 @@ export const Login = () => {
               value={userData.email}
               required
               fullWidth
-              onBlur={() =>
-                setError({ ...error, email: validatedEmail.data ? '' : 'A valid Email is required' })
-              }
+              onBlur={() => verifyInput('email')}
               onChange={(event) => handleChange(event, 'email')}
               error={!!error.email}
             />
@@ -102,7 +129,7 @@ export const Login = () => {
               value={userData.password}
               required
               fullWidth
-              onBlur={() => setError({ ...error, password: userData.password ? '' : 'Password is required' })}
+              onBlur={() => verifyInput('password')}
               onChange={(event) => handleChange(event, 'password')}
               error={!!error.password}
             />
