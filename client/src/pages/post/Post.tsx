@@ -14,7 +14,7 @@ import { Author, Content, Date, PostInformation, Summary } from '../../component
 import { PostImage } from '../../components/post-image/PostImage';
 import { routes } from '../../config/navigation/navigation';
 import { Post as IPost } from '../../types/types';
-import { handleAxiosError } from '../../utils/error-handling/axiosError';
+import { handleAxiosError } from '../../utils/errorHandling';
 
 export const Post = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -43,7 +43,7 @@ export const Post = () => {
   const handleDelete = async () => {
     try {
       await axios.delete(`${import.meta.env.VITE_POSTS_URL}/${id}`);
-      enqueueSnackbar('Post successfully deleted', { variant: 'success' });
+      enqueueSnackbar('Post successfully deleted', { variant: 'success', autoHideDuration: 3000 });
       navigate(routes.posts.route);
     } catch (error: unknown) {
       handleAxiosError(error, enqueueSnackbar);

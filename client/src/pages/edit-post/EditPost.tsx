@@ -14,7 +14,8 @@ import { PaperBackground } from '../../components/paper-background/PaperBackgrou
 import { PostImage } from '../../components/post-image/PostImage';
 import { routes } from '../../config/navigation/navigation';
 import { Post } from '../../types/types';
-import { handleAxiosError } from '../../utils/error-handling/axiosError';
+import { handleAxiosError } from '../../utils/errorHandling';
+import { getAccessToken } from '../../utils/getToken';
 
 const StyledForm = styled('form')(({ theme }) => ({
   display: 'flex',
@@ -69,7 +70,7 @@ export const EditPost = () => {
       setEditMode(true);
     } else if (pathname !== routes.addPost.route && !id) {
       navigate(routes.addPost.route);
-      enqueueSnackbar('Post not found', { variant: 'error' });
+      enqueueSnackbar('Post not found', { variant: 'error', autoHideDuration: 3000 });
     }
   }, []);
 
@@ -137,14 +138,18 @@ export const EditPost = () => {
 
   const createPost = async (formData: FormData) => {
     try {
-      const token = localStorage.getItem('accessToken');
+      const accessToken = await getAccessToken(enqueueSnackbar);
+      if (!accessToken) {
+        navigate(routes.login.route, { state: { lastVisited: window.location.href } });
+      }
+
       const result = await axios.post(import.meta.env.VITE_POSTS_URL, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       });
-      enqueueSnackbar('Post successfully added', { variant: 'success' });
+      enqueueSnackbar('Post successfully added', { variant: 'success', autoHideDuration: 3000 });
       return result.data._id;
     } catch (error: unknown) {
       handleAxiosError(error, enqueueSnackbar);
@@ -153,15 +158,20 @@ export const EditPost = () => {
 
   const updatePost = async (formData: FormData) => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const result = await axios.put(`${import.meta.env.VITE_POSTS_URL}/${id}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      enqueueSnackbar('Post successfully updated', { variant: 'success' });
-      return result.data._id as string;
+      const accessToken = await getAccessToken(enqueueSnackbar);
+      console.log('accessToken, ', accessToken);
+      if (!accessToken) {
+        navigate(routes.login.route, { state: { lastVisited: window.location.href } });
+      } else {
+        const result = await axios.put(`${import.meta.env.VITE_POSTS_URL}/${id}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        enqueueSnackbar('Post successfully updated', { variant: 'success', autoHideDuration: 3000 });
+        return result.data._id as string;
+      }
     } catch (error: unknown) {
       handleAxiosError(error, enqueueSnackbar, 'Post could not be updated');
     }

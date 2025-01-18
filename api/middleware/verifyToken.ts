@@ -17,7 +17,7 @@ const verifyJwt = (token: string, publicKey: string) => {
 
 const getPublicKey = () => {
   try {
-    const publicKey = readFileSync('./certs/jwtKey.pem.pub', 'utf-8');
+    const publicKey = readFileSync('./certs/access-token/public.pem.pub', 'utf-8');
     return publicKey;
   } catch (error) {
     console.error(error);

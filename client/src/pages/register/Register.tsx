@@ -11,8 +11,7 @@ import { PageContainer } from '../../components/page-container/PageContainer';
 import { PageHeader } from '../../components/page-header/PageHeader';
 import { PaperCard } from '../../components/paper-card/PaperCard';
 import { routes } from '../../config/navigation/navigation';
-import { handleAxiosError } from '../../utils/error-handling/axiosError';
-import { handleZodSafeParseError } from '../../utils/error-handling/zodSafeParseError';
+import { handleAxiosError, handleZodSafeParseError } from '../../utils/errorHandling';
 
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*+?&()"#^-])[A-Za-z\d@$!%*+?&()"#^-]{8,}$/;
 
@@ -127,7 +126,7 @@ export const Register = () => {
           'Content-Type': 'application/json',
         },
       });
-      enqueueSnackbar('User successfully added', { variant: 'success' });
+      enqueueSnackbar('User successfully added', { variant: 'success', autoHideDuration: 3000 });
       navigate(routes.login.route);
     } catch (error: unknown) {
       handleAxiosError(error, enqueueSnackbar);

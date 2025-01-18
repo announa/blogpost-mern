@@ -1,10 +1,12 @@
 import bcrypt from 'bcrypt';
 import { ObjectId } from 'bson';
 import { Request, Response } from 'express';
-import fs from 'fs';
-import jwt, { SignOptions } from 'jsonwebtoken';
 import { Model, MongooseError } from 'mongoose';
+import { CustomError } from '../class/CustomError';
+import { generateAccessToken, generateRefreshToken } from '../helpers/generateToken';
+import { hashPassword } from '../helpers/hasPassword';
 import { loginInputParser, registerInputParser } from '../helpers/parameterParser';
+import { verifyRefreshToken } from '../helpers/verifyRefreshToken';
 import { User } from '../models/user.model';
 
 type UnwrapModel<T> = T extends Model<infer U> ? U : never;
@@ -15,7 +17,7 @@ type GetUserIdInput = {
   password: string;
 };
 
-const getUser = async ({ email, password }: GetUserIdInput) => {
+const getUserFromDb = async ({ email, password }: GetUserIdInput) => {
   console.log('Retrieving user from DB');
   let user: IUser | null = null;
   const result = await User.find({ email: email }).lean();
@@ -39,42 +41,23 @@ const getUser = async ({ email, password }: GetUserIdInput) => {
   }
 };
 
-const generateJwt = (userId: ObjectId) => {
-  console.log('generating token');
-  const signOptions: SignOptions = {
-    expiresIn: '10min',
-    algorithm: 'RS256',
-    subject: userId.toString(),
-    issuer: process.env.TOKEN_ISS,
-    audience: process.env.TOKEN_AUD,
-  };
-  const secret = fs.readFileSync('./certs/jwtKey.pem', 'utf8');
-  const token = jwt.sign({}, secret, signOptions);
-  return token;
-};
-
 export const login = async (req: Request, res: Response) => {
   console.log('logging user in');
   try {
     const loginInformation = loginInputParser.parse(req.body);
-    const user = await getUser(loginInformation);
-    const token = generateJwt(user.id);
-    if (!token) {
+    const user = await getUserFromDb(loginInformation);
+    const accessToken = generateAccessToken(user.id);
+    const refreshToken = generateRefreshToken(user.id);
+    if (!accessToken || !refreshToken) {
       res.status(500).json({ message: 'Login failed' });
     } else {
-      res.status(200).json({ accessToken: token, data: user });
+      res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken, data: user });
     }
   } catch (error: unknown) {
     const mongooseError = error as MongooseError;
     console.error(mongooseError);
     res.status(500).json({ message: mongooseError.message });
   }
-};
-
-const hashPassword = async (password: string) => {
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
-  return hashedPassword;
 };
 
 export const register = async (req: Request, res: Response) => {
@@ -90,5 +73,31 @@ export const register = async (req: Request, res: Response) => {
     const mongooseError = error as MongooseError;
     console.error(mongooseError);
     res.status(500).json({ message: mongooseError.message });
+  }
+};
+
+export const getAccessToken = (req: Request, res: Response) => {
+  try {
+    const refreshToken = req.body.token;
+    if (!refreshToken) {
+      console.error('Missing token in payload');
+      res.status(404).send('Missing token in payload');
+    }
+    const tokenPayload = verifyRefreshToken(refreshToken);
+    const userId = tokenPayload.sub;
+    if (!userId) {
+      console.error('Invalid refresh token');
+      res.status(404).send('Invalid refresh token');
+    } else {
+      const accessToken = generateAccessToken(userId);
+      res.status(200).json({ accessToken: accessToken });
+    }
+  } catch (error) {
+    console.error(error);
+    if (error instanceof CustomError) {
+      res.status(error.statusCode ?? 500).send(error.message);
+    } else {
+      res.status(500).send('Internal server error');
+    }
   }
 };

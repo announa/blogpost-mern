@@ -3,16 +3,16 @@ import { Box, Grid2 } from '@mui/material';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { useEffect, useState } from 'react';
+import { Link } from '../../components/link/Link';
 import { PageContainer } from '../../components/page-container/PageContainer';
 import { PageHeader } from '../../components/page-header/PageHeader';
 import { PaperBackground } from '../../components/paper-background/PaperBackground';
 import { PaperCard } from '../../components/paper-card/PaperCard';
+import { Author, Date, Summary } from '../../components/post-content/PostContent';
 import { PostImage } from '../../components/post-image/PostImage';
 import { routes } from '../../config/navigation/navigation';
 import { Post } from '../../types/types';
-import { handleAxiosError } from '../../utils/error-handling/axiosError';
-import { Author, Date, Summary } from '../../components/post-content/PostContent';
-import { Link } from '../../components/link/Link';
+import { handleAxiosError } from '../../utils/errorHandling';
 
 export const Posts = () => {
   const { enqueueSnackbar } = useSnackbar();

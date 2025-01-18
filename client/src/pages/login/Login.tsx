@@ -1,7 +1,7 @@
 import { styled, TextField, Typography, useTheme } from '@mui/material';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
-import { ChangeEvent, FormEvent, KeyboardEvent, KeyboardEventHandler, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import validator from 'validator';
 import { z } from 'zod';
@@ -13,8 +13,15 @@ import { PageHeader } from '../../components/page-header/PageHeader';
 import { PaperCard } from '../../components/paper-card/PaperCard';
 import { routes } from '../../config/navigation/navigation';
 import { User, useUserContext } from '../../context/UserContext';
-import { handleAxiosError } from '../../utils/error-handling/axiosError';
-import { handleZodSafeParseError } from '../../utils/error-handling/zodSafeParseError';
+import { handleAxiosError, handleZodSafeParseError } from '../../utils/errorHandling';
+import { StorageToken } from '../../utils/getToken';
+import { saveTokenInLocalStorage } from '../../utils/localStorage';
+
+type LoginResult = {
+  accessToken: StorageToken;
+  refreshToken: StorageToken;
+  data: User;
+};
 
 const StyledForm = styled('form')({
   width: '100%',
@@ -62,22 +69,26 @@ export const Login = () => {
 
   const isSubmitDisabled = !validatedUserData.data;
 
-  const handleAuthResponse = (token: string, user: User) => {
-    if (!token) {
+  const handleAuthResponse = (accessToken: StorageToken, refreshToken: StorageToken, user: User) => {
+    if (!accessToken || !refreshToken) {
       enqueueSnackbar('Login failed. Please try again later', { variant: 'error' });
       setUserData(initialUserData);
       setError(initialUserData);
     } else {
-      localStorage.setItem('accessToken', token);
+      localStorage.setItem('accessToken', JSON.stringify(accessToken));
+      localStorage.setItem('refreshToken', JSON.stringify(refreshToken));
+
+      // saveTokenInLocalStorage(accessToken, 'accessToken')
+      // saveTokenInLocalStorage(refreshToken, 'refreshToken')
       userContext.setUser(user);
       enqueueSnackbar('Successfully logged in', { variant: 'success' });
     }
   };
 
   const handleLogin = async (event: FormEvent) => {
-    event.preventDefault()
+    event.preventDefault();
     try {
-      const result = await axios.post(
+      const result = await axios.post<LoginResult>(
         `${import.meta.env.VITE_AUTH_URL}${routes.login.route}`,
         validatedUserData.data,
         {
@@ -86,9 +97,11 @@ export const Login = () => {
           },
         }
       );
-      const token = result.data.accessToken;
+      console.log('ACCESSTOKEN: ', result.data.accessToken);
+      const accessToken = result.data.accessToken;
+      const refreshToken = result.data.refreshToken;
       const user = result.data.data;
-      handleAuthResponse(token, user);
+      handleAuthResponse(accessToken, refreshToken, user);
     } catch (error: unknown) {
       handleAxiosError(error, enqueueSnackbar);
     }
@@ -136,7 +149,7 @@ export const Login = () => {
             />
             {error.password && <FormError>{error.password}</FormError>}
           </div>
-          <Button type='submit' disabled={isSubmitDisabled}>
+          <Button type="submit" disabled={isSubmitDisabled}>
             Login
           </Button>
           <Typography variant="body2">
