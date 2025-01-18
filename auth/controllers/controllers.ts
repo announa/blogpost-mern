@@ -42,7 +42,7 @@ const getUser = async ({ email, password }: GetUserIdInput) => {
 const generateJwt = (userId: ObjectId) => {
   console.log('generating token');
   const signOptions: SignOptions = {
-    expiresIn: '30s',
+    expiresIn: '10min',
     algorithm: 'RS256',
     subject: userId.toString(),
     issuer: process.env.TOKEN_ISS,

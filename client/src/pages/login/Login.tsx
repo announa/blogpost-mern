@@ -1,7 +1,7 @@
 import { styled, TextField, Typography, useTheme } from '@mui/material';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
-import { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, FormEvent, KeyboardEvent, KeyboardEventHandler, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import validator from 'validator';
 import { z } from 'zod';
@@ -74,7 +74,8 @@ export const Login = () => {
     }
   };
 
-  const handleLogin = async () => {
+  const handleLogin = async (event: FormEvent) => {
+    event.preventDefault()
     try {
       const result = await axios.post(
         `${import.meta.env.VITE_AUTH_URL}${routes.login.route}`,
@@ -106,7 +107,7 @@ export const Login = () => {
     <PageContainer>
       <PaperCard maxWidth="500px" padding="50px">
         <PageHeader title="Login" textAlign="center" />
-        <StyledForm>
+        <StyledForm onSubmit={handleLogin}>
           <div>
             <TextField
               name="email"
@@ -135,7 +136,7 @@ export const Login = () => {
             />
             {error.password && <FormError>{error.password}</FormError>}
           </div>
-          <Button onClick={handleLogin} disabled={isSubmitDisabled}>
+          <Button type='submit' disabled={isSubmitDisabled}>
             Login
           </Button>
           <Typography variant="body2">
