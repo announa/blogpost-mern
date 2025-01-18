@@ -1,19 +1,17 @@
 import { styled, ThemeProvider } from '@mui/material';
 import { SnackbarProvider } from 'notistack';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { Sidebar } from './components/sidebar/Sidebar';
+import { NavBar } from './components/nav/NavBar';
+import { PageContainer } from './components/page-container/PageContainer';
+import { PaperBackground } from './components/paper-background/PaperBackground';
 import { routes } from './config/navigation/navigation';
-import { Dashboard } from './pages/dashboard/Dashboard';
+import { UserContextProvider } from './context/UserContext';
 import { EditPost } from './pages/edit-post/EditPost';
+import { Login } from './pages/login/Login';
 import { Post } from './pages/post/Post';
 import { Posts } from './pages/posts/Posts';
-import { theme } from './style/theme';
 import { Register } from './pages/register/Register';
-import { Login } from './pages/login/Login';
-import { UserContextProvider } from './context/UserContext';
-import { PageContainer } from './components/page-container/PageContainer';
-import { NavBar } from './components/nav/NavBar';
-import { PaperBackground } from './components/paper-background/PaperBackground';
+import { theme } from './style/theme';
 
 const Content = styled('div')({
   height: '100vh',
@@ -38,7 +36,7 @@ export const App = () => {
                 <PaperBackground flex={1}>
                   <NavBar />
                   <Routes>
-                    <Route path={routes.dashboard.route} element={<Dashboard />} />
+                    {/* <Route path={routes.dashboard.route} element={<Dashboard />} /> */}
                     <Route path={routes.addPost.route} element={<EditPost />} />
                     <Route path={routes.posts.route} element={<Posts />} />
                     <Route path={routes.post.route} element={<Post />} />

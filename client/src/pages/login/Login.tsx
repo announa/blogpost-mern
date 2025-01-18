@@ -15,6 +15,7 @@ import { routes } from '../../config/navigation/navigation';
 import { User, useUserContext } from '../../context/UserContext';
 import { handleAxiosError, handleZodSafeParseError } from '../../utils/errorHandling';
 import { StorageToken } from '../../utils/getToken';
+import { ContentContainer } from '../../components/content-container/ContentContainer';
 
 type LoginResult = {
   accessToken: StorageToken;
@@ -116,7 +117,7 @@ export const Login = () => {
   };
 
   return (
-    <PageContainer>
+    <ContentContainer>
       <PaperCard maxWidth="500px" padding="50px">
         <PageHeader title="Login" textAlign="center" />
         <StyledForm onSubmit={handleLogin}>
@@ -166,6 +167,6 @@ export const Login = () => {
           </Typography>
         </StyledForm>
       </PaperCard>
-    </PageContainer>
+    </ContentContainer>
   );
 };

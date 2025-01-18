@@ -8,6 +8,7 @@ import { hashPassword } from '../helpers/hasPassword';
 import { loginInputParser, registerInputParser } from '../helpers/parameterParser';
 import { verifyRefreshToken } from '../helpers/verifyRefreshToken';
 import { User } from '../models/user.model';
+import { RefreshToken } from '../models/refreshToken.model';
 
 type UnwrapModel<T> = T extends Model<infer U> ? U : never;
 type IUser = UnwrapModel<typeof User> & { _id: ObjectId };
@@ -41,6 +42,23 @@ const getUserFromDb = async ({ email, password }: GetUserIdInput) => {
   }
 };
 
+const storeRefreshToken = async (refreshToken: string, userId: ObjectId) => {
+  console.log('storing refresh token: ', refreshToken);
+  console.log('user: ', userId);
+  const existingToken = await RefreshToken.findOne({ user: userId });
+  console.log('existingToken: ', existingToken);
+  if (existingToken) {
+    const updatedToken = await RefreshToken.findByIdAndUpdate(
+      existingToken._id,
+      { $push: { token: refreshToken } },
+      { new: true }
+    );
+    console.log(updatedToken);
+  } else {
+    const newToken = await RefreshToken.create({ user: userId, token: [refreshToken] });
+  }
+};
+
 export const login = async (req: Request, res: Response) => {
   console.log('logging user in');
   try {
@@ -48,6 +66,8 @@ export const login = async (req: Request, res: Response) => {
     const user = await getUserFromDb(loginInformation);
     const accessToken = generateAccessToken(user.id);
     const refreshToken = generateRefreshToken(user.id);
+    const refreshTokenDbEntry = await storeRefreshToken(refreshToken.token, user.id);
+    console.log(refreshTokenDbEntry);
     if (!accessToken || !refreshToken) {
       res.status(500).json({ message: 'Login failed' });
     } else {

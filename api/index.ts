@@ -1,19 +1,15 @@
+import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 import mongoose, { MongooseError } from 'mongoose';
-import cors from 'cors';
-import multer from 'multer';
-import postsRoutes from './routes/posts.route'
-
+import postsRoutes from './routes/posts.route';
 
 dotenv.config();
 
 const app = express();
-const upload = multer();
-
 
 app.use(express.json());
-app.use(express.urlencoded({extended: true}))
+app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
