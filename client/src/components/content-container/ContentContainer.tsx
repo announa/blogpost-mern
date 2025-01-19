@@ -6,7 +6,7 @@ export interface ContentContainer {
 }
 export const ContentContainer = ({ children }: ContentContainer) => {
   return (
-    <Box width="100%" display="flex" alignItems="center" flexDirection="column" marginTop="100px">
+    <Box width="100%" display="flex" alignItems="center" flexDirection="column" marginTop="80px">
       {children}
     </Box>
   );

@@ -7,16 +7,19 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import sanitize from 'sanitize-html';
 import { Button } from '../../components/button/Button';
+import { ContentContainer } from '../../components/content-container/ContentContainer';
 import { PageHeader } from '../../components/page-header/PageHeader';
 import { Author, Content, Date, PostInformation, Summary } from '../../components/post-content/PostContent';
 import { PostImage } from '../../components/post-image/PostImage';
 import { routes } from '../../config/navigation/navigation';
+import { useUserContext } from '../../context/UserContext';
 import { Post as IPost } from '../../types/types';
-import { handleAxiosError } from '../../utils/errorHandling';
-import { ContentContainer } from '../../components/content-container/ContentContainer';
+import { handleError } from '../../utils/errorHandling';
+import { getAccessToken } from '../../utils/getToken';
 
 export const Post = () => {
   const { enqueueSnackbar } = useSnackbar();
+  const userContext = useUserContext();
   const navigate = useNavigate();
   const { id } = useParams();
   const [post, setPost] = useState<IPost | null>(null);
@@ -26,7 +29,7 @@ export const Post = () => {
       const post = await axios.get<IPost>(`${import.meta.env.VITE_POSTS_URL}/${id}`);
       return post.data;
     } catch (error: unknown) {
-      handleAxiosError(error, enqueueSnackbar);
+      handleError(error, enqueueSnackbar);
     }
   };
 
@@ -41,11 +44,16 @@ export const Post = () => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`${import.meta.env.VITE_POSTS_URL}/${id}`);
+      const accessToken = getAccessToken(enqueueSnackbar);
+      await axios.delete(`${import.meta.env.VITE_POSTS_URL}/${id}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
       enqueueSnackbar('Post successfully deleted', { variant: 'success', autoHideDuration: 3000 });
       navigate(routes.posts.route);
-    } catch (error: unknown) {
-      handleAxiosError(error, enqueueSnackbar);
+    } catch (error) {
+      handleError(error, enqueueSnackbar);
     }
   };
 
@@ -56,7 +64,6 @@ export const Post = () => {
   return (
     <ContentContainer>
       <Box width="100%" maxWidth="700px" height="100%">
-        {/* <PaperCard> */}
         {loading ? <PageHeader title="Loading..." /> : <PageHeader title={post?.title ?? 'Post not found'} />}
         {loading ? (
           <Box height="100%" display="flex" justifyContent="center" alignItems="center">
@@ -83,15 +90,16 @@ export const Post = () => {
             </Box>
           </>
         )}
-        {/* </PaperCard> */}
-        <Box display="flex" justifyContent="space-between" marginTop="36px">
-          <Button startIcon={<DeleteIcon />} onClick={handleDelete}>
-            Delete Post
-          </Button>
-          <Button startIcon={<EditIcon />} onClick={handleUpdate}>
-            Edit Post
-          </Button>
-        </Box>
+        {userContext?.user && (
+          <Box display="flex" justifyContent="space-between" marginTop="36px">
+            <Button startIcon={<DeleteIcon />} onClick={handleDelete}>
+              Delete Post
+            </Button>
+            <Button startIcon={<EditIcon />} onClick={handleUpdate}>
+              Edit Post
+            </Button>
+          </Box>
+        )}
       </Box>
     </ContentContainer>
   );

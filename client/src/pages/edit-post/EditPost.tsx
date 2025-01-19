@@ -7,15 +7,14 @@ import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import 'react-quill/dist/quill.snow.css';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../components/button/Button';
+import { ContentContainer } from '../../components/content-container/ContentContainer';
 import { Editor } from '../../components/editor/Editor';
 import { PageHeader } from '../../components/page-header/PageHeader';
 import { PostImage } from '../../components/post-image/PostImage';
 import { routes } from '../../config/navigation/navigation';
 import { Post } from '../../types/types';
-import { handleAxiosError } from '../../utils/errorHandling';
 import { getAccessToken } from '../../utils/getToken';
-import { ContentContainer } from '../../components/content-container/ContentContainer';
-import { useUserContext } from '../../context/UserContext';
+import { handleError } from '../../utils/errorHandling';
 
 const StyledForm = styled('form')(({ theme }) => ({
   display: 'flex',
@@ -46,7 +45,6 @@ type PostKey = keyof PostToEdit;
 export const EditPost = () => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-  const userContext = useUserContext()
   const { pathname } = useLocation();
   const { id } = useParams();
   const [currentPost, setCurrentPost] = useState<PostToEdit | null>(null);
@@ -55,10 +53,6 @@ export const EditPost = () => {
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  if(!userContext){
-    navigate(routes.posts.route)
-  }
 
   const shouldUploadImage = useMemo(
     () => (!editMode && newImage) || (editMode && newImage !== undefined),
@@ -84,7 +78,7 @@ export const EditPost = () => {
       const post = await axios.get<Post>(`${import.meta.env.VITE_POSTS_URL}/${id}`);
       return post.data;
     } catch (error: unknown) {
-      handleAxiosError(error, enqueueSnackbar);
+      handleError(error, enqueueSnackbar);
     }
   };
 
@@ -157,7 +151,7 @@ export const EditPost = () => {
       enqueueSnackbar('Post successfully added', { variant: 'success', autoHideDuration: 3000 });
       return result.data._id;
     } catch (error: unknown) {
-      handleAxiosError(error, enqueueSnackbar);
+      handleError(error, enqueueSnackbar);
     }
   };
 
@@ -178,7 +172,7 @@ export const EditPost = () => {
         return result.data._id as string;
       }
     } catch (error: unknown) {
-      handleAxiosError(error, enqueueSnackbar, 'Post could not be updated');
+      handleError(error, enqueueSnackbar, 'Post could not be updated');
     }
   };
 
@@ -202,75 +196,75 @@ export const EditPost = () => {
   };
 
   return (
-      <ContentContainer>
-        <PageHeader title={editMode ? 'Edit Post' : 'Add a new Post'} />
-        {loading ? (
-          <Box height="100%" display="flex" alignItems="center" justifyContent="center">
-            <CircularProgress />
+    <ContentContainer>
+      <PageHeader title={editMode ? 'Edit Post' : 'Add a new Post'} />
+      {loading ? (
+        <Box height="100%" display="flex" alignItems="center" justifyContent="center">
+          <CircularProgress />
+        </Box>
+      ) : (
+        <StyledForm onSubmit={handleSubmit}>
+          <TextField
+            label="Title"
+            value={postToUpload.title}
+            type="text"
+            onChange={(event) => setPostToUpload({ ...postToUpload, title: event.target.value })}
+            sx={{ '.MuiInputBase-root': { backgroundColor: 'white' } }}
+          />
+          <TextField
+            label="Author"
+            value={postToUpload.author}
+            type="text"
+            onChange={(event) => setPostToUpload({ ...postToUpload, author: event.target.value })}
+            sx={{ '.MuiInputBase-root': { backgroundColor: 'white' } }}
+          />
+          <TextField
+            label="Summary"
+            value={postToUpload.summary}
+            type="text"
+            onChange={(event) => setPostToUpload({ ...postToUpload, summary: event.target.value })}
+            sx={{ '.MuiInputBase-root': { backgroundColor: 'white' } }}
+          />
+          <Editor post={postToUpload} setPost={setPostToUpload} />
+          <input type="file" onChange={uploadImage} />
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            width="100%"
+            sx={{ aspectRatio: '2' }}
+            position="relative"
+            border={currentImage ? 'none' : '1px solid #cdcdcd'}
+            borderRadius="4px"
+          >
+            <Box>
+              <PostImage src={currentImage} />
+              {currentImage && (
+                <Tooltip title="Delete Image">
+                  <DeleteImageButton
+                    size="small"
+                    sx={{
+                      backgroundColor: 'white',
+                      '&:hover': { backgroundColor: 'white', boxShadow: '0 0 4px white' },
+                    }}
+                    onClick={handleDeleteImage}
+                  >
+                    <DeleteIcon />
+                  </DeleteImageButton>
+                </Tooltip>
+              )}
+            </Box>
           </Box>
-        ) : (
-          <StyledForm onSubmit={handleSubmit}>
-            <TextField
-              label="Title"
-              value={postToUpload.title}
-              type="text"
-              onChange={(event) => setPostToUpload({ ...postToUpload, title: event.target.value })}
-              sx={{ '.MuiInputBase-root': { backgroundColor: 'white' } }}
-            />
-            <TextField
-              label="Author"
-              value={postToUpload.author}
-              type="text"
-              onChange={(event) => setPostToUpload({ ...postToUpload, author: event.target.value })}
-              sx={{ '.MuiInputBase-root': { backgroundColor: 'white' } }}
-            />
-            <TextField
-              label="Summary"
-              value={postToUpload.summary}
-              type="text"
-              onChange={(event) => setPostToUpload({ ...postToUpload, summary: event.target.value })}
-              sx={{ '.MuiInputBase-root': { backgroundColor: 'white' } }}
-            />
-            <Editor post={postToUpload} setPost={setPostToUpload} />
-            <input type="file" onChange={uploadImage} />
-            <Box
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              width="100%"
-              sx={{ aspectRatio: '2' }}
-              position="relative"
-              border={currentImage ? 'none' : '1px solid #cdcdcd'}
-              borderRadius="4px"
-            >
-              <Box>
-                <PostImage src={currentImage} />
-                {currentImage && (
-                  <Tooltip title="Delete Image">
-                    <DeleteImageButton
-                      size="small"
-                      sx={{
-                        backgroundColor: 'white',
-                        '&:hover': { backgroundColor: 'white', boxShadow: '0 0 4px white' },
-                      }}
-                      onClick={handleDeleteImage}
-                    >
-                      <DeleteIcon />
-                    </DeleteImageButton>
-                  </Tooltip>
-                )}
-              </Box>
-            </Box>
-            <Box display="flex" justifyContent="space-between">
-              <Button variant="outlined" onClick={() => navigate(routes.posts.route)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitDisabled}>
-                {editMode ? 'Update Post' : 'Add Post'}
-              </Button>
-            </Box>
-          </StyledForm>
-        )}
-      </ContentContainer>
+          <Box display="flex" justifyContent="space-between">
+            <Button variant="outlined" onClick={() => navigate(routes.posts.route)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitDisabled}>
+              {editMode ? 'Update Post' : 'Add Post'}
+            </Button>
+          </Box>
+        </StyledForm>
+      )}
+    </ContentContainer>
   );
 };

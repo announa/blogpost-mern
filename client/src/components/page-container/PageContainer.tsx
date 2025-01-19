@@ -1,14 +1,18 @@
 import { styled } from '@mui/material';
 
 const Container = styled('div')({
-  height: '100%',
+  height: '100vh',
+  width: '100vw',
   flex: 1,
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
   alignItems: 'center',
   gap: '36px',
-  position: 'relative'
+  position: 'relative',
+  padding: '10px',
+  backgroundColor: '#efefef',
+
 });
 
 export interface PageContainerProps {

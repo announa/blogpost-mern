@@ -3,6 +3,7 @@ import { Box, Grid2 } from '@mui/material';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { useEffect, useState } from 'react';
+import { ContentContainer } from '../../components/content-container/ContentContainer';
 import { Link } from '../../components/link/Link';
 import { PageHeader } from '../../components/page-header/PageHeader';
 import { PaperCard } from '../../components/paper-card/PaperCard';
@@ -10,8 +11,7 @@ import { Author, Date, Summary } from '../../components/post-content/PostContent
 import { PostImage } from '../../components/post-image/PostImage';
 import { routes } from '../../config/navigation/navigation';
 import { Post } from '../../types/types';
-import { handleAxiosError } from '../../utils/errorHandling';
-import { ContentContainer } from '../../components/content-container/ContentContainer';
+import { handleError } from '../../utils/errorHandling';
 
 export const Posts = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -21,7 +21,7 @@ export const Posts = () => {
       const posts = await axios.get<Post[]>(import.meta.env.VITE_POSTS_URL);
       return posts.data;
     } catch (error: unknown) {
-      handleAxiosError(error, enqueueSnackbar);
+      handleError(error, enqueueSnackbar);
     }
   };
 

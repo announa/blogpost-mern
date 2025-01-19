@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffect, useState } from 'react';
-import { getAccessToken } from '../utils/getToken';
 import { useSnackbar } from 'notistack';
-import { handleAxiosError } from '../utils/errorHandling';
+import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffect, useState } from 'react';
+import { handleError } from '../utils/errorHandling';
+import { getAccessToken } from '../utils/getToken';
 
 export type User = {
   firstName: string;
@@ -30,9 +30,9 @@ export const UserContextProvider = ({ children }: { children: ReactNode }) => {
         },
       });
       const userData = result.data ?? null;
-      setUser(userData)
+      setUser(userData);
     } catch (error) {
-      handleAxiosError(error, enqueueSnackbar);
+      handleError(error, enqueueSnackbar);
     }
   };
   useEffect(() => {

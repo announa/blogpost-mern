@@ -16,23 +16,18 @@ export const handleZodSafeParseError = <T extends Record<string, string>>(
   return newError;
 };
 
-export const handleAxiosError = (
+export const handleError = (
   error: unknown,
   enqueueSnackbar: EnqueueSnackbar,
   customMessage?: string
 ) => {
-  const axiosError = error as AxiosError;
-  console.error(axiosError);
-  const errorData = axiosError?.response?.data as { message: string };
-  enqueueSnackbar(customMessage ?? errorData.message, { variant: 'error', autoHideDuration: 3000 });
-};
-
-export const handleNormalError = (
-  error: unknown,
-  enqueueSnackbar: EnqueueSnackbar,
-  customMessage?: string
-) => {
-  const normalError = error as Error;
-  console.error(normalError);
-  enqueueSnackbar(customMessage ?? normalError.message, { variant: 'error', autoHideDuration: 3000 });
+  let errorMessage = '';
+  if (error instanceof AxiosError) {
+    const errorData = error?.response?.data as { error: { message: string } };
+    errorMessage = errorData.error.message;
+  } else if (error instanceof Error) {
+    errorMessage = error.message;
+  }
+  console.error(errorMessage);
+  enqueueSnackbar(customMessage ?? errorMessage, { variant: 'error', autoHideDuration: 3000 });
 };
