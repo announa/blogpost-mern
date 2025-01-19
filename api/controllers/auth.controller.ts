@@ -3,13 +3,13 @@ import { ObjectId } from 'bson';
 import { Request, Response } from 'express';
 import { Model, MongooseError } from 'mongoose';
 import { HTTPError } from '../class/HTTPError';
-import { generateAccessToken, generateRefreshToken } from '../helpers/generateToken';
-import { hashPassword } from '../helpers/hasPassword';
-import { loginInputParser, registerInputParser } from '../helpers/parameterParser';
-import { verifyRefreshToken } from '../helpers/verifyRefreshToken';
-import { User } from '../models/user.model';
+import { handleError } from '../helper/errorHandling';
+import { generateAccessToken, generateRefreshToken } from '../helper/generateToken';
+import { hashPassword } from '../helper/hasPassword';
+import { loginInputParser, registerInputParser } from '../helper/parameterParser';
+import { verifyRefreshToken } from '../helper/verifyRefreshToken';
 import { RefreshToken } from '../models/refreshToken.model';
-import { handleError } from '../helpers/errorHandling';
+import { User } from '../models/user.model';
 
 type UnwrapModel<T> = T extends Model<infer U> ? U : never;
 type IUser = UnwrapModel<typeof User> & { _id: ObjectId };
@@ -78,6 +78,17 @@ export const login = async (req: Request, res: Response) => {
     handleError(error, res);
   }
 };
+
+export const logout = async (req: Request, res: Response) => {
+  try{
+  const userId = req.userId
+  const response = (await RefreshToken.findOneAndDelete({ user: userId }).lean());
+  console.log(response)
+  res.status(200).send('Successfully logged out')
+  } catch (error){
+    handleError(error, res)
+  }
+}
 
 export const register = async (req: Request, res: Response) => {
   try {

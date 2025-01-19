@@ -1,7 +1,5 @@
-import { NextFunction, Request, Response } from 'express';
-import { readFileSync } from 'fs';
 import { JwtPayload, verify } from 'jsonwebtoken';
-import { HTTPError, IHTTPError } from '../class/HTTPError';
+import { HTTPError } from '../class/HTTPError';
 import { getFile } from './getFile';
 
 const verifyJwt = (token: string, publicKey: string) => {

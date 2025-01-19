@@ -27,7 +27,7 @@ const verifyJwt = (token: string, publicKey: string) => {
 
 const getPublicKey = () => {
   try {
-    const publicKey = readFileSync('./certs/access-token/public.pem.pub', 'utf-8');
+    const publicKey = readFileSync(process.env.PUBLIC_ACCESS_TOKEN_KEY as string, 'utf-8');
     return publicKey;
   } catch (error) {
     console.error(error);
@@ -56,7 +56,7 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction) => 
     }
     console.log(token);
     const verified = verifyJwt(token, publicKey);
-    if (req.originalUrl === '/api/user') {
+    if (req.originalUrl === '/api/user' || req.originalUrl === '/auth/logout') {
       req.userId = verified.sub ?? '';
     }
     next();

@@ -11,7 +11,7 @@ import { PageContainer } from '../../components/page-container/PageContainer';
 import { PageHeader } from '../../components/page-header/PageHeader';
 import { PaperCard } from '../../components/paper-card/PaperCard';
 import { routes } from '../../config/navigation/navigation';
-import { handleAxiosError, handleZodSafeParseError } from '../../utils/errorHandling';
+import { handleError, handleZodSafeParseError } from '../../utils/errorHandling';
 
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*+?&()"#^-])[A-Za-z\d@$!%*+?&()"#^-]{8,}$/;
 
@@ -98,14 +98,7 @@ export const Register = () => {
   }, [userData, repeatPassword]);
 
   useEffect(() => {
-    const newError = handleZodSafeParseError(error, validatedUserData)
-    // const allErrorFields = Object.keys(error);
-    // const activeErrorFields = validatedUserData.error?.issues.map((issue) => issue.path[0]);
-    // const noErrorFields = allErrorFields.filter((field) => !activeErrorFields?.includes(field));
-    // let newError = { ...error };
-    // for (const key of noErrorFields) {
-    //   newError = { ...newError, [key]: '' };
-    // }
+    const newError = handleZodSafeParseError(error, validatedUserData);
     setError(newError);
   }, [validatedUserData]);
 
@@ -129,10 +122,10 @@ export const Register = () => {
       enqueueSnackbar('User successfully added', { variant: 'success', autoHideDuration: 3000 });
       navigate(routes.login.route);
     } catch (error: unknown) {
-      handleAxiosError(error, enqueueSnackbar);
+      handleError(error, enqueueSnackbar);
     }
   };
-  
+
   return (
     <PageContainer>
       <PaperCard maxWidth="500px" padding="50px">

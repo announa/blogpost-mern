@@ -5,6 +5,7 @@ import { routes, sidebarRoutes } from '../../config/navigation/navigation';
 import { useUserContext } from '../../context/UserContext';
 import { Button } from '../button/Button';
 import { Link } from '../link/Link';
+import { useLogout } from '../../hooks/useLogout';
 
 const NavBarMenuItem = styled(MenuItem)({
   paddingTop: 0,
@@ -14,6 +15,7 @@ const NavBarMenuItem = styled(MenuItem)({
 export const NavBar = () => {
   const userContext = useUserContext();
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const { logout } = useLogout();
 
   const isMenuOpen = useMemo(() => !!menuAnchor, [menuAnchor]);
   return (
@@ -59,6 +61,7 @@ export const NavBar = () => {
           </Button>
           <Menu open={isMenuOpen} anchorEl={menuAnchor} onClose={() => setMenuAnchor(null)}>
             <NavBarMenuItem> Account Settings</NavBarMenuItem>
+            <NavBarMenuItem onClick={async () => await logout()}> Logout</NavBarMenuItem>
           </Menu>
         </Box>
       )}

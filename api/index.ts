@@ -4,6 +4,7 @@ import express from 'express';
 import mongoose, { MongooseError } from 'mongoose';
 import postsRoutes from './routes/posts.route';
 import userRoutes from './routes/user.route';
+import authRoutes from './routes/auth.route';
 
 dotenv.config();
 
@@ -22,6 +23,8 @@ app.use(
 
 app.use('/api/posts', postsRoutes);
 app.use('/api/user', userRoutes);
+app.use('/auth', authRoutes);
+
 
 app.get('/', (req, res) => {
   res.send('Server running');
