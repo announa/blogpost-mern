@@ -15,6 +15,7 @@ import { Post } from '../../types/types';
 import { handleAxiosError } from '../../utils/errorHandling';
 import { getAccessToken } from '../../utils/getToken';
 import { ContentContainer } from '../../components/content-container/ContentContainer';
+import { useUserContext } from '../../context/UserContext';
 
 const StyledForm = styled('form')(({ theme }) => ({
   display: 'flex',
@@ -45,6 +46,7 @@ type PostKey = keyof PostToEdit;
 export const EditPost = () => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
+  const userContext = useUserContext()
   const { pathname } = useLocation();
   const { id } = useParams();
   const [currentPost, setCurrentPost] = useState<PostToEdit | null>(null);
@@ -53,6 +55,10 @@ export const EditPost = () => {
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  if(!userContext){
+    navigate(routes.posts.route)
+  }
 
   const shouldUploadImage = useMemo(
     () => (!editMode && newImage) || (editMode && newImage !== undefined),

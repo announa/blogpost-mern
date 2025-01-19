@@ -2,13 +2,14 @@ import bcrypt from 'bcrypt';
 import { ObjectId } from 'bson';
 import { Request, Response } from 'express';
 import { Model, MongooseError } from 'mongoose';
-import { CustomError } from '../class/CustomError';
+import { HTTPError } from '../class/HTTPError';
 import { generateAccessToken, generateRefreshToken } from '../helpers/generateToken';
 import { hashPassword } from '../helpers/hasPassword';
 import { loginInputParser, registerInputParser } from '../helpers/parameterParser';
 import { verifyRefreshToken } from '../helpers/verifyRefreshToken';
 import { User } from '../models/user.model';
 import { RefreshToken } from '../models/refreshToken.model';
+import { handleError } from '../helpers/errorHandling';
 
 type UnwrapModel<T> = T extends Model<infer U> ? U : never;
 type IUser = UnwrapModel<typeof User> & { _id: ObjectId };
@@ -69,14 +70,12 @@ export const login = async (req: Request, res: Response) => {
     const refreshTokenDbEntry = await storeRefreshToken(refreshToken.token, user.id);
     console.log(refreshTokenDbEntry);
     if (!accessToken || !refreshToken) {
-      res.status(500).json({ message: 'Login failed' });
+      throw new HTTPError('Internal server error', 500);
     } else {
       res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken, data: user });
     }
-  } catch (error: unknown) {
-    const mongooseError = error as MongooseError;
-    console.error(mongooseError);
-    res.status(500).json({ message: mongooseError.message });
+  } catch (error) {
+    handleError(error, res);
   }
 };
 
@@ -86,38 +85,36 @@ export const register = async (req: Request, res: Response) => {
     const hashedPassword = await hashPassword(signUpInformation.password);
     const newUser = await User.create({ ...signUpInformation, password: hashedPassword });
     if (!newUser) {
-      res.status(500).json({ message: 'Could not create new user' });
+      throw new HTTPError('Could not create new user', 500);
     }
     res.status(200).json(newUser);
-  } catch (error: unknown) {
-    const mongooseError = error as MongooseError;
-    console.error(mongooseError);
-    res.status(500).json({ message: mongooseError.message });
+  } catch (error) {
+    handleError(error, res);
   }
 };
 
-export const getAccessToken = (req: Request, res: Response) => {
+export const token = async (req: Request, res: Response) => {
   try {
     const refreshToken = req.body.token;
+    console.log('refreshToken: ', refreshToken)
     if (!refreshToken) {
-      console.error('Missing token in payload');
-      res.status(404).send('Missing token in payload');
+      throw new HTTPError('Invalid request: token missing', 404);
     }
     const tokenPayload = verifyRefreshToken(refreshToken);
     const userId = tokenPayload.sub;
     if (!userId) {
-      console.error('Invalid refresh token');
-      res.status(404).send('Invalid refresh token');
+      throw new HTTPError('Invalid refresh token', 404);
     } else {
+      const response = (await RefreshToken.findOne({ user: userId, token: refreshToken }).lean());
+      const dbRefreshToken = response?.token[0]
+      console.log('DB REFRESH TOKEN', dbRefreshToken);
+      if (!dbRefreshToken || dbRefreshToken !== refreshToken) {
+        throw new HTTPError('Unauthorized', 401);
+      }
       const accessToken = generateAccessToken(userId);
       res.status(200).json({ accessToken: accessToken });
     }
   } catch (error) {
-    console.error(error);
-    if (error instanceof CustomError) {
-      res.status(error.statusCode ?? 500).send(error.message);
-    } else {
-      res.status(500).send('Internal server error');
-    }
+    handleError(error, res);
   }
 };

@@ -1,4 +1,8 @@
-import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from 'react';
+import axios from 'axios';
+import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffect, useState } from 'react';
+import { getAccessToken } from '../utils/getToken';
+import { useSnackbar } from 'notistack';
+import { handleAxiosError } from '../utils/errorHandling';
 
 export type User = {
   firstName: string;
@@ -13,9 +17,29 @@ export interface IUserContext {
 }
 
 export const UserContext = createContext<IUserContext | null>(null);
-export const UserContextProvider = ({children}: {children: ReactNode}) => {
+export const UserContextProvider = ({ children }: { children: ReactNode }) => {
+  const { enqueueSnackbar } = useSnackbar();
   const [user, setUser] = useState<User | null>(null);
+
+  const getUserData = async () => {
+    try {
+      const accessToken = await getAccessToken(enqueueSnackbar);
+      const result = await axios.get(import.meta.env.VITE_USER_URL, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const userData = result.data ?? null;
+      setUser(userData)
+    } catch (error) {
+      handleAxiosError(error, enqueueSnackbar);
+    }
+  };
+  useEffect(() => {
+    getUserData();
+  }, []);
+
   return <UserContext.Provider value={{ user, setUser }}>{children}</UserContext.Provider>;
 };
 
-export const useUserContext = () => useContext(UserContext)
+export const useUserContext = () => useContext(UserContext);
