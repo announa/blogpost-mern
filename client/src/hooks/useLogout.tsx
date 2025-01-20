@@ -4,9 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { routes } from '../config/navigation/navigation';
 import { handleError } from '../utils/errorHandling';
 import { getAccessToken } from '../utils/getToken';
+import { useUserContext } from '../context/UserContext';
 
 export const useLogout = () => {
   const navigate = useNavigate();
+  const userContext = useUserContext()
 
   const removeStorageData = () => {
     localStorage.clear();
@@ -14,14 +16,17 @@ export const useLogout = () => {
 
   const logout = async () => {
     try {
-      const accessToken = getAccessToken(enqueueSnackbar);
-      await axios.post(`${import.meta.env.VITE_AUTH_URL}/logout`, {
+      const accessToken = await getAccessToken(enqueueSnackbar);
+      await axios.post(`${import.meta.env.VITE_AUTH_URL}/logout`, {}, {
         headers: {
-          ['Authorization']: accessToken,
+          ['Authorization']: `Bearer ${accessToken}`,
         },
       });
       removeStorageData();
       navigate(routes.login.route);
+      if(userContext){
+        userContext.setUser(null)
+      }
     } catch (error) {
       handleError(error, enqueueSnackbar);
     }

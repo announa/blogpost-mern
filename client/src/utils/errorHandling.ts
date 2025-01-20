@@ -16,15 +16,15 @@ export const handleZodSafeParseError = <T extends Record<string, string>>(
   return newError;
 };
 
-export const handleError = (
-  error: unknown,
-  enqueueSnackbar: EnqueueSnackbar,
-  customMessage?: string
-) => {
+export const handleError = (error: unknown, enqueueSnackbar: EnqueueSnackbar, customMessage?: string) => {
   let errorMessage = '';
   if (error instanceof AxiosError) {
-    const errorData = error?.response?.data as { error: { message: string } };
-    errorMessage = errorData.error.message;
+    if (error.response?.data) {
+      const errorData = error?.response?.data as { error: { message: string } };
+      errorMessage = errorData.error.message;
+    } else {
+      errorMessage = error.message;
+    }
   } else if (error instanceof Error) {
     errorMessage = error.message;
   }

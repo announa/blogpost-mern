@@ -7,7 +7,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import sanitize from 'sanitize-html';
 import { Button } from '../../components/button/Button';
-import { ContentContainer } from '../../components/content-container/ContentContainer';
+import { NoData } from '../../components/no-data/NoData';
+import { PageContainer } from '../../components/page-container/PageContainer';
 import { PageHeader } from '../../components/page-header/PageHeader';
 import { Author, Content, Date, PostInformation, Summary } from '../../components/post-content/PostContent';
 import { PostImage } from '../../components/post-image/PostImage';
@@ -24,6 +25,7 @@ export const Post = () => {
   const { id } = useParams();
   const [post, setPost] = useState<IPost | null>(null);
   const [loading, setLoading] = useState(true);
+  const [noDataError, setNoDataError] = useState(false);
   const getPost = async () => {
     try {
       const post = await axios.get<IPost>(`${import.meta.env.VITE_POSTS_URL}/${id}`);
@@ -53,6 +55,7 @@ export const Post = () => {
       enqueueSnackbar('Post successfully deleted', { variant: 'success', autoHideDuration: 3000 });
       navigate(routes.posts.route);
     } catch (error) {
+      setNoDataError(true);
       handleError(error, enqueueSnackbar);
     }
   };
@@ -61,8 +64,12 @@ export const Post = () => {
     navigate(`${routes.updatePost.baseRoute}/${id}`);
   };
 
+  if (noDataError) {
+    return <NoData title="Post" />;
+  }
+
   return (
-    <ContentContainer>
+    <PageContainer>
       <Box width="100%" maxWidth="700px" height="100%">
         {loading ? <PageHeader title="Loading..." /> : <PageHeader title={post?.title ?? 'Post not found'} />}
         {loading ? (
@@ -101,6 +108,6 @@ export const Post = () => {
           </Box>
         )}
       </Box>
-    </ContentContainer>
+    </PageContainer>
   );
 };

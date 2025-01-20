@@ -1,26 +1,13 @@
-import { styled } from '@mui/material';
+import { Box, BoxProps } from '@mui/material';
+import { ReactNode } from 'react';
 
-const Container = styled('div')({
-  height: '100vh',
-  width: '100vw',
-  flex: 1,
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  alignItems: 'center',
-  gap: '36px',
-  position: 'relative',
-  padding: '10px',
-  backgroundColor: '#efefef',
-
-});
-
-export interface PageContainerProps {
-  children: React.ReactNode;
+export interface ContentContainerProps extends BoxProps {
+  children?: ReactNode;
 }
-
-export const PageContainer = (props: PageContainerProps) => {
-  const { children } = props;
-
-  return <Container>{children}</Container>;
+export const PageContainer = ({ children, ...props }: ContentContainerProps) => {
+  return (
+    <Box width="100%" display="flex" alignItems="center" flexDirection="column" marginTop="80px" {...props}>
+      {children}
+    </Box>
+  );
 };

@@ -13,9 +13,8 @@ import { PageHeader } from '../../components/page-header/PageHeader';
 import { PaperCard } from '../../components/paper-card/PaperCard';
 import { routes } from '../../config/navigation/navigation';
 import { User, useUserContext } from '../../context/UserContext';
-import { handleAxiosError, handleZodSafeParseError } from '../../utils/errorHandling';
+import { handleError, handleZodSafeParseError } from '../../utils/errorHandling';
 import { StorageToken } from '../../utils/getToken';
-import { ContentContainer } from '../../components/content-container/ContentContainer';
 
 type LoginResult = {
   accessToken: StorageToken;
@@ -71,15 +70,10 @@ export const Login = () => {
 
   const handleAuthResponse = (accessToken: StorageToken, refreshToken: StorageToken, user: User) => {
     if (!accessToken || !refreshToken) {
-      enqueueSnackbar('Login failed. Please try again later', { variant: 'error' });
-      setUserData(initialUserData);
-      setError(initialUserData);
+      throw new Error('Login failed. Please try again later');
     } else {
       localStorage.setItem('accessToken', JSON.stringify(accessToken));
       localStorage.setItem('refreshToken', JSON.stringify(refreshToken));
-
-      // saveTokenInLocalStorage(accessToken, 'accessToken')
-      // saveTokenInLocalStorage(refreshToken, 'refreshToken')
       userContext.setUser(user);
       enqueueSnackbar('Successfully logged in', { variant: 'success' });
     }
@@ -102,10 +96,10 @@ export const Login = () => {
       const refreshToken = result.data.refreshToken;
       const user = result.data.data;
       handleAuthResponse(accessToken, refreshToken, user);
-    } catch (error: unknown) {
-      handleAxiosError(error, enqueueSnackbar);
+      navigate(routes.posts.route);
+    } catch (error) {
+      handleError(error, enqueueSnackbar);
     }
-    navigate(routes.posts.route);
   };
 
   const handleChange = (
@@ -117,7 +111,7 @@ export const Login = () => {
   };
 
   return (
-    <ContentContainer>
+    <PageContainer>
       <PaperCard maxWidth="500px" padding="50px">
         <PageHeader title="Login" textAlign="center" />
         <StyledForm onSubmit={handleLogin}>
@@ -167,6 +161,6 @@ export const Login = () => {
           </Typography>
         </StyledForm>
       </PaperCard>
-    </ContentContainer>
+    </PageContainer>
   );
 };

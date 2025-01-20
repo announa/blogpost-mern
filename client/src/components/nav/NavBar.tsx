@@ -1,17 +1,12 @@
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
-import { Box, Menu, MenuItem, styled } from '@mui/material';
+import { Box, Menu, MenuItem } from '@mui/material';
 import { MouseEvent, useMemo, useState } from 'react';
 import { routes, sidebarRoutes } from '../../config/navigation/navigation';
 import { useUserContext } from '../../context/UserContext';
+import { useLogout } from '../../hooks/useLogout';
 import { Button } from '../button/Button';
 import { Link } from '../link/Link';
-import { useLogout } from '../../hooks/useLogout';
 
-const NavBarMenuItem = styled(MenuItem)({
-  paddingTop: 0,
-  paddingBottom: 0,
-  minHeight: '40px',
-});
 export const NavBar = () => {
   const userContext = useUserContext();
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
@@ -31,11 +26,15 @@ export const NavBar = () => {
       padding="0 50px"
     >
       <Box display="flex" gap="24px">
-        {sidebarRoutes.map((route) => (
-          <Link key={route.route} to={route.route} color="black">
-            {route.name}
-          </Link>
-        ))}
+        {sidebarRoutes.flatMap((route) =>
+          route.route === routes.addPost.route && !userContext?.user ? (
+            []
+          ) : (
+            <Link key={route.route} to={route.route} color="black">
+              {route.name}
+            </Link>
+          )
+        )}
       </Box>
       {!userContext?.user ? (
         <Box>
@@ -60,8 +59,8 @@ export const NavBar = () => {
             {userContext.user.firstName}
           </Button>
           <Menu open={isMenuOpen} anchorEl={menuAnchor} onClose={() => setMenuAnchor(null)}>
-            <NavBarMenuItem> Account Settings</NavBarMenuItem>
-            <NavBarMenuItem onClick={async () => await logout()}> Logout</NavBarMenuItem>
+            <MenuItem> Account Settings</MenuItem>
+            <MenuItem onClick={async () => await logout()}> Logout</MenuItem>
           </Menu>
         </Box>
       )}

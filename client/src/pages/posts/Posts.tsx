@@ -3,8 +3,9 @@ import { Box, Grid2 } from '@mui/material';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { useEffect, useState } from 'react';
-import { ContentContainer } from '../../components/content-container/ContentContainer';
 import { Link } from '../../components/link/Link';
+import { NoData } from '../../components/no-data/NoData';
+import { PageContainer } from '../../components/page-container/PageContainer';
 import { PageHeader } from '../../components/page-header/PageHeader';
 import { PaperCard } from '../../components/paper-card/PaperCard';
 import { Author, Date, Summary } from '../../components/post-content/PostContent';
@@ -16,11 +17,14 @@ import { handleError } from '../../utils/errorHandling';
 export const Posts = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [posts, setPosts] = useState<Post[]>([]);
+  const [noDataError, setNoDataError] = useState(false);
   const getPosts = async () => {
     try {
       const posts = await axios.get<Post[]>(import.meta.env.VITE_POSTS_URL);
       return posts.data;
-    } catch (error: unknown) {
+    } catch (error) {
+      console.error(error);
+      setNoDataError(true);
       handleError(error, enqueueSnackbar);
     }
   };
@@ -33,8 +37,11 @@ export const Posts = () => {
     });
   }, []);
 
+  if (noDataError) {
+    return <NoData title="Posts" />;
+  }
   return (
-    <ContentContainer>
+    <PageContainer>
       <PageHeader title="Posts" />
       <Grid2 container spacing={6}>
         {posts.map((post) => (
@@ -65,6 +72,6 @@ export const Posts = () => {
           </Grid2>
         ))}
       </Grid2>
-    </ContentContainer>
+    </PageContainer>
   );
 };
