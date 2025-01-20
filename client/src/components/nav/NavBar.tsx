@@ -6,12 +6,19 @@ import { useUserContext } from '../../context/UserContext';
 import { useLogout } from '../../hooks/useLogout';
 import { Button } from '../button/Button';
 import { Link } from '../link/Link';
+import { LoadingOverlay } from '../loading-overlay/LoadingOverlay';
 
 export const NavBar = () => {
   const userContext = useUserContext();
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const [loading, setLoading] = useState(false);
   const { logout } = useLogout();
 
+  const handleLogout = async () => {
+    setLoading(true);
+    setMenuAnchor(null)
+    await logout(() => setLoading(false));
+  };
   const isMenuOpen = useMemo(() => !!menuAnchor, [menuAnchor]);
   return (
     <Box
@@ -60,10 +67,11 @@ export const NavBar = () => {
           </Button>
           <Menu open={isMenuOpen} anchorEl={menuAnchor} onClose={() => setMenuAnchor(null)}>
             <MenuItem> Account Settings</MenuItem>
-            <MenuItem onClick={async () => await logout()}> Logout</MenuItem>
+            <MenuItem onClick={handleLogout}> Logout</MenuItem>
           </Menu>
         </Box>
       )}
+      <LoadingOverlay open={loading} />
     </Box>
   );
 };

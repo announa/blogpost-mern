@@ -4,7 +4,6 @@ import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { useEffect, useState } from 'react';
 import { Link } from '../../components/link/Link';
-import { NoData } from '../../components/no-data/NoData';
 import { PageContainer } from '../../components/page-container/PageContainer';
 import { PageHeader } from '../../components/page-header/PageHeader';
 import { PaperCard } from '../../components/paper-card/PaperCard';
@@ -13,17 +12,19 @@ import { PostImage } from '../../components/post-image/PostImage';
 import { routes } from '../../config/navigation/navigation';
 import { Post } from '../../types/types';
 import { handleError } from '../../utils/errorHandling';
+import { NoData } from '../no-data/NoData';
+import { Loading } from '../loading/Loading';
 
 export const Posts = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [posts, setPosts] = useState<Post[]>([]);
   const [noDataError, setNoDataError] = useState(false);
+  const [loading, setLoading] = useState(true);
   const getPosts = async () => {
     try {
       const posts = await axios.get<Post[]>(import.meta.env.VITE_POSTS_URL);
       return posts.data;
     } catch (error) {
-      console.error(error);
       setNoDataError(true);
       handleError(error, enqueueSnackbar);
     }
@@ -34,11 +35,15 @@ export const Posts = () => {
       if (data) {
         setPosts(data);
       }
+      setLoading(false);
     });
   }, []);
 
   if (noDataError) {
     return <NoData title="Posts" />;
+  }
+  if (loading) {
+    return <Loading textAlign='center' title="Posts" />;
   }
   return (
     <PageContainer>

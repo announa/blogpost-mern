@@ -6,7 +6,6 @@ import { getTokenFromLocalStorage, StorageToken } from './getToken';
 export const requestAccessToken = async (enqueueSnackbar: EnqueueSnackbar) => {
   try {
     const refreshToken = getTokenFromLocalStorage('refreshToken');
-    console.log('refreshToken: ', refreshToken);
     if (!refreshToken) {
       return null;
     }

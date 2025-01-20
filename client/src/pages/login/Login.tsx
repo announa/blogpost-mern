@@ -15,6 +15,7 @@ import { routes } from '../../config/navigation/navigation';
 import { User, useUserContext } from '../../context/UserContext';
 import { handleError, handleZodSafeParseError } from '../../utils/errorHandling';
 import { StorageToken } from '../../utils/getToken';
+import { LoadingOverlay } from '../../components/loading-overlay/LoadingOverlay';
 
 type LoginResult = {
   accessToken: StorageToken;
@@ -47,6 +48,7 @@ export const Login = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [userData, setUserData] = useState(initialUserData);
   const [error, setError] = useState(initialUserData);
+  const [loading, setLoading] = useState(false)
 
   if (!userContext) {
     throw new Error('useUserContext must be used within a UserContextProvider');
@@ -81,6 +83,7 @@ export const Login = () => {
 
   const handleLogin = async (event: FormEvent) => {
     event.preventDefault();
+    setLoading(true)
     try {
       const result = await axios.post<LoginResult>(
         `${import.meta.env.VITE_AUTH_URL}${routes.login.route}`,
@@ -99,6 +102,7 @@ export const Login = () => {
       navigate(routes.posts.route);
     } catch (error) {
       handleError(error, enqueueSnackbar);
+      setLoading(false)
     }
   };
 
@@ -161,6 +165,7 @@ export const Login = () => {
           </Typography>
         </StyledForm>
       </PaperCard>
+      <LoadingOverlay open={loading} />
     </PageContainer>
   );
 };

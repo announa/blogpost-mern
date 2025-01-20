@@ -1,5 +1,5 @@
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, CircularProgress, IconButton, styled, TextField, Tooltip } from '@mui/material';
+import { Box, IconButton, styled, TextField, Tooltip } from '@mui/material';
 import axios from 'axios';
 import { isEqual } from 'lodash';
 import { useSnackbar } from 'notistack';
@@ -15,6 +15,7 @@ import { routes } from '../../config/navigation/navigation';
 import { Post } from '../../types/types';
 import { handleError } from '../../utils/errorHandling';
 import { getAccessToken } from '../../utils/getToken';
+import { Loading } from '../loading/Loading';
 
 const StyledForm = styled('form')(({ theme }) => ({
   display: 'flex',
@@ -63,6 +64,17 @@ export const EditPost = () => {
     () => isEqual(currentPost, postToUpload) && !shouldUploadImage,
     [currentPost, postToUpload, shouldUploadImage]
   );
+
+  const pageTitle = useMemo(() => {
+    const title = editMode ? 'Edit Post' : 'Add Post'
+    if(loading && isSubmitDisabled) {
+      return 'Loading...'
+    } else if (loading && !isSubmitDisabled) {
+      return 'Updating Post...'
+    } else {
+      return title
+    }
+  }, [loading, editMode, isSubmitDisabled])
 
   useEffect(() => {
     if (id) {
@@ -180,6 +192,7 @@ export const EditPost = () => {
     event.preventDefault();
     const formData = createFormData();
     let postId = null;
+    setLoading(true)
     if (!editMode) {
       postId = await createPost(formData);
     } else {
@@ -187,6 +200,8 @@ export const EditPost = () => {
     }
     if (postId) {
       navigate(`${routes.post.baseRoute}/${postId}`);
+    } else {
+      setLoading(false)
     }
   };
 
@@ -195,76 +210,75 @@ export const EditPost = () => {
     setCurrentImage(null);
   };
 
+  if (loading) {
+    return <Loading title={pageTitle} />;
+  }
+
   return (
     <PageContainer>
-      <PageHeader title={editMode ? 'Edit Post' : 'Add a new Post'} />
-      {loading ? (
-        <Box height="100%" display="flex" alignItems="center" justifyContent="center">
-          <CircularProgress />
+      <PageHeader title={pageTitle} />
+
+      <StyledForm onSubmit={handleSubmit}>
+        <TextField
+          label="Title"
+          value={postToUpload.title}
+          type="text"
+          onChange={(event) => setPostToUpload({ ...postToUpload, title: event.target.value })}
+          sx={{ '.MuiInputBase-root': { backgroundColor: 'white' } }}
+        />
+        <TextField
+          label="Author"
+          value={postToUpload.author}
+          type="text"
+          onChange={(event) => setPostToUpload({ ...postToUpload, author: event.target.value })}
+          sx={{ '.MuiInputBase-root': { backgroundColor: 'white' } }}
+        />
+        <TextField
+          label="Summary"
+          value={postToUpload.summary}
+          type="text"
+          onChange={(event) => setPostToUpload({ ...postToUpload, summary: event.target.value })}
+          sx={{ '.MuiInputBase-root': { backgroundColor: 'white' } }}
+        />
+        <Editor post={postToUpload} setPost={setPostToUpload} />
+        <input type="file" onChange={uploadImage} />
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          width="100%"
+          sx={{ aspectRatio: '2' }}
+          position="relative"
+          border={currentImage ? 'none' : '1px solid #cdcdcd'}
+          borderRadius="4px"
+        >
+          <Box>
+            <PostImage src={currentImage} />
+            {currentImage && (
+              <Tooltip title="Delete Image">
+                <DeleteImageButton
+                  size="small"
+                  sx={{
+                    backgroundColor: 'white',
+                    '&:hover': { backgroundColor: 'white', boxShadow: '0 0 4px white' },
+                  }}
+                  onClick={handleDeleteImage}
+                >
+                  <DeleteIcon />
+                </DeleteImageButton>
+              </Tooltip>
+            )}
+          </Box>
         </Box>
-      ) : (
-        <StyledForm onSubmit={handleSubmit}>
-          <TextField
-            label="Title"
-            value={postToUpload.title}
-            type="text"
-            onChange={(event) => setPostToUpload({ ...postToUpload, title: event.target.value })}
-            sx={{ '.MuiInputBase-root': { backgroundColor: 'white' } }}
-          />
-          <TextField
-            label="Author"
-            value={postToUpload.author}
-            type="text"
-            onChange={(event) => setPostToUpload({ ...postToUpload, author: event.target.value })}
-            sx={{ '.MuiInputBase-root': { backgroundColor: 'white' } }}
-          />
-          <TextField
-            label="Summary"
-            value={postToUpload.summary}
-            type="text"
-            onChange={(event) => setPostToUpload({ ...postToUpload, summary: event.target.value })}
-            sx={{ '.MuiInputBase-root': { backgroundColor: 'white' } }}
-          />
-          <Editor post={postToUpload} setPost={setPostToUpload} />
-          <input type="file" onChange={uploadImage} />
-          <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            width="100%"
-            sx={{ aspectRatio: '2' }}
-            position="relative"
-            border={currentImage ? 'none' : '1px solid #cdcdcd'}
-            borderRadius="4px"
-          >
-            <Box>
-              <PostImage src={currentImage} />
-              {currentImage && (
-                <Tooltip title="Delete Image">
-                  <DeleteImageButton
-                    size="small"
-                    sx={{
-                      backgroundColor: 'white',
-                      '&:hover': { backgroundColor: 'white', boxShadow: '0 0 4px white' },
-                    }}
-                    onClick={handleDeleteImage}
-                  >
-                    <DeleteIcon />
-                  </DeleteImageButton>
-                </Tooltip>
-              )}
-            </Box>
-          </Box>
-          <Box display="flex" justifyContent="space-between">
-            <Button variant="outlined" onClick={() => navigate(routes.posts.route)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitDisabled}>
-              {editMode ? 'Update Post' : 'Add Post'}
-            </Button>
-          </Box>
-        </StyledForm>
-      )}
+        <Box display="flex" justifyContent="space-between">
+          <Button variant="outlined" onClick={() => navigate(routes.posts.route)}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isSubmitDisabled}>
+            {editMode ? 'Update Post' : 'Add Post'}
+          </Button>
+        </Box>
+      </StyledForm>
     </PageContainer>
   );
 };

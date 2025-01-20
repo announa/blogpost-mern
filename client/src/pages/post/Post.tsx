@@ -1,13 +1,12 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { Box, CircularProgress } from '@mui/material';
+import { Box } from '@mui/material';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import sanitize from 'sanitize-html';
 import { Button } from '../../components/button/Button';
-import { NoData } from '../../components/no-data/NoData';
 import { PageContainer } from '../../components/page-container/PageContainer';
 import { PageHeader } from '../../components/page-header/PageHeader';
 import { Author, Content, Date, PostInformation, Summary } from '../../components/post-content/PostContent';
@@ -17,6 +16,8 @@ import { useUserContext } from '../../context/UserContext';
 import { Post as IPost } from '../../types/types';
 import { handleError } from '../../utils/errorHandling';
 import { getAccessToken } from '../../utils/getToken';
+import { Loading } from '../loading/Loading';
+import { NoData } from '../no-data/NoData';
 
 export const Post = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -67,36 +68,29 @@ export const Post = () => {
   if (noDataError) {
     return <NoData title="Post" />;
   }
+  if (loading) {
+    return <Loading title="Loading..." />;
+  }
 
   return (
     <PageContainer>
-      <Box width="100%" maxWidth="700px" height="100%">
-        {loading ? <PageHeader title="Loading..." /> : <PageHeader title={post?.title ?? 'Post not found'} />}
-        {loading ? (
-          <Box height="100%" display="flex" justifyContent="center" alignItems="center">
-            <CircularProgress />
-          </Box>
-        ) : (
-          <>
-            <Box marginBottom="24px">
-              <PostImage
-                src={post?.image?.data}
-                imageProps={{ alt: post?.title }}
-                boxProps={{ borderRadius: '0 !important' }}
-              />
-            </Box>
-            <Box flex="1">
-              <PostInformation>
-                <Author>{post?.author}</Author>
-                <Date>{post?.createdAt}</Date>{' '}
-              </PostInformation>
-              <Summary>{post?.summary}</Summary>
-              <Content
-                dangerouslySetInnerHTML={post?.content ? { __html: sanitize(post.content) } : undefined}
-              />
-            </Box>
-          </>
-        )}
+      <Box flex={1} width="100%" maxWidth="700px" height="100%">
+      <PageHeader title={post?.title ?? 'Post not found'} />
+        <Box marginBottom="24px">
+          <PostImage
+            src={post?.image?.data}
+            imageProps={{ alt: post?.title }}
+            boxProps={{ borderRadius: '0 !important' }}
+          />
+        </Box>
+        <Box flex="1">
+          <PostInformation>
+            <Author>{post?.author}</Author>
+            <Date>{post?.createdAt}</Date>{' '}
+          </PostInformation>
+          <Summary>{post?.summary}</Summary>
+          <Content dangerouslySetInnerHTML={post?.content ? { __html: sanitize(post.content) } : undefined} />
+        </Box>
         {userContext?.user && (
           <Box display="flex" justifyContent="space-between" marginTop="36px">
             <Button startIcon={<DeleteIcon />} onClick={handleDelete}>
