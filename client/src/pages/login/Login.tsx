@@ -2,20 +2,20 @@ import { styled, TextField, Typography, useTheme } from '@mui/material';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import validator from 'validator';
 import { z } from 'zod';
-import { Button } from '../../components/button/Button';
+import { Button } from '../../components/base/button/Button';
+import { Link } from '../../components/base/link/Link';
+import { LoadingOverlay } from '../../components/base/loading-overlay/LoadingOverlay';
+import { PaperCard } from '../../components/base/paper-card/PaperCard';
 import { FormError } from '../../components/form-error/FormError';
-import { Link } from '../../components/link/Link';
-import { PageContainer } from '../../components/page-container/PageContainer';
-import { PageHeader } from '../../components/page-header/PageHeader';
-import { PaperCard } from '../../components/paper-card/PaperCard';
+import { PageContainer } from '../../components/page/page-container/PageContainer';
+import { PageHeader } from '../../components/page/page-header/PageHeader';
 import { routes } from '../../config/navigation/navigation';
-import { User, useUserContext } from '../../context/UserContext';
+import { User, useUserContext } from '../../context/useUserContext';
+import { StorageToken } from '../../hooks/useToken';
 import { handleError, handleZodSafeParseError } from '../../utils/errorHandling';
-import { StorageToken } from '../../utils/getToken';
-import { LoadingOverlay } from '../../components/loading-overlay/LoadingOverlay';
 
 type LoginResult = {
   accessToken: StorageToken;
@@ -46,15 +46,13 @@ export const Login = () => {
   const userContext = useUserContext();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
+  const { state } = useLocation();
   const [userData, setUserData] = useState(initialUserData);
   const [error, setError] = useState(initialUserData);
-  const [loading, setLoading] = useState(false)
-
-  if (!userContext) {
-    throw new Error('useUserContext must be used within a UserContextProvider');
-  }
+  const [loading, setLoading] = useState(false);
 
   const validatedUserData = useMemo(() => loginInputParser.safeParse(userData), [userData]);
+  const redirectUrl = useMemo(() => state?.lastVisited ?? routes.posts.route, []);
 
   useEffect(() => {
     const newError = handleZodSafeParseError(error, validatedUserData);
@@ -76,14 +74,14 @@ export const Login = () => {
     } else {
       localStorage.setItem('accessToken', JSON.stringify(accessToken));
       localStorage.setItem('refreshToken', JSON.stringify(refreshToken));
-      userContext.setUser(user);
-      enqueueSnackbar('Successfully logged in', { variant: 'success' });
+      userContext?.setUser(user);
+      userContext?.setRefreshTokenExpiration(refreshToken.expiration);
     }
   };
 
   const handleLogin = async (event: FormEvent) => {
     event.preventDefault();
-    setLoading(true)
+    setLoading(true);
     try {
       const result = await axios.post<LoginResult>(
         `${import.meta.env.VITE_AUTH_URL}${routes.login.route}`,
@@ -94,15 +92,14 @@ export const Login = () => {
           },
         }
       );
-      console.log('ACCESSTOKEN: ', result.data.accessToken);
       const accessToken = result.data.accessToken;
       const refreshToken = result.data.refreshToken;
       const user = result.data.data;
       handleAuthResponse(accessToken, refreshToken, user);
-      navigate(routes.posts.route);
+      navigate(redirectUrl);
     } catch (error) {
       handleError(error, enqueueSnackbar);
-      setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -116,7 +113,7 @@ export const Login = () => {
 
   return (
     <PageContainer>
-      <PaperCard maxWidth="500px" padding="50px">
+      <PaperCard maxWidth="450px">
         <PageHeader title="Login" textAlign="center" />
         <StyledForm onSubmit={handleLogin}>
           <div>

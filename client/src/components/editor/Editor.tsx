@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 import ReactQuill from 'react-quill';
 import { PostToEdit } from '../../pages/edit-post/EditPost';
 
@@ -17,11 +17,8 @@ const StyledEditor = styled(ReactQuill)({
 const toolbarOptions = [
   ['bold', 'italic', 'underline', 'strike'], // toggled buttons
   ['blockquote', 'code-block'],
-  // ['link', 'image', 'video', 'formula'],
 
-  // [{ header: 1 }, { header: 2 }], // custom button values
   [{ list: 'ordered' }, { list: 'bullet' }, { list: 'check' }],
-  // [{ script: 'sub' }, { script: 'super' }], // superscript/subscript
   [{ indent: '-1' }, { indent: '+1' }], // outdent/indent
   [{ direction: 'rtl' }], // text direction
 
@@ -35,18 +32,32 @@ const toolbarOptions = [
   ['clean'], // remove formatting button
 ];
 
+const clipboardOptions = {
+  matchVisual: false,
+};
+
 export interface EditorProps {
   setPost: Dispatch<SetStateAction<PostToEdit>>;
   post: PostToEdit;
 }
 export const Editor = (props: EditorProps) => {
   const { post, setPost } = props;
+  const [editorContent, setEditorContent] = useState<string | null>(null);
+  const handleChange = (content: string) => {
+    if (!editorContent) {
+      setEditorContent(post.content);
+      setPost({ ...post, content: content });
+    } else {
+      setPost({ ...post, content: content });
+    }
+  };
+
   return (
     <StyledEditor
       theme="snow"
       value={post.content}
-      onChange={(value) => setPost({ ...post, content: value })}
-      modules={{ toolbar: toolbarOptions }}
+      onChange={handleChange}
+      modules={{ toolbar: toolbarOptions, clipboard: clipboardOptions }}
     />
   );
 };

@@ -6,16 +6,22 @@ import { useSnackbar } from 'notistack';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import sanitize from 'sanitize-html';
-import { Button } from '../../components/button/Button';
-import { PageContainer } from '../../components/page-container/PageContainer';
-import { PageHeader } from '../../components/page-header/PageHeader';
-import { Author, Content, Date, PostInformation, Summary } from '../../components/post-content/PostContent';
-import { PostImage } from '../../components/post-image/PostImage';
+import { Button } from '../../components/base/button/Button';
+import { PageContainer } from '../../components/page/page-container/PageContainer';
+import { PageHeader } from '../../components/page/page-header/PageHeader';
+import {
+  Author,
+  Content,
+  Date,
+  PostInformation,
+  Summary,
+} from '../../components/post/post-content/PostContent';
+import { PostImage } from '../../components/post/post-image/PostImage';
 import { routes } from '../../config/navigation/navigation';
-import { useUserContext } from '../../context/UserContext';
+import { useUserContext } from '../../context/useUserContext';
+import { useToken } from '../../hooks/useToken';
 import { Post as IPost } from '../../types/types';
 import { handleError } from '../../utils/errorHandling';
-import { getAccessToken } from '../../utils/getToken';
 import { Loading } from '../loading/Loading';
 import { NoData } from '../no-data/NoData';
 
@@ -23,6 +29,7 @@ export const Post = () => {
   const { enqueueSnackbar } = useSnackbar();
   const userContext = useUserContext();
   const navigate = useNavigate();
+  const { getAccessToken } = useToken();
   const { id } = useParams();
   const [post, setPost] = useState<IPost | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,7 +54,7 @@ export const Post = () => {
 
   const handleDelete = async () => {
     try {
-      const accessToken = getAccessToken(enqueueSnackbar);
+      const accessToken = getAccessToken();
       await axios.delete(`${import.meta.env.VITE_POSTS_URL}/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -61,7 +68,7 @@ export const Post = () => {
     }
   };
 
-  const handleUpdate = () => {
+  const handleEditClick = () => {
     navigate(`${routes.updatePost.baseRoute}/${id}`);
   };
 
@@ -69,13 +76,13 @@ export const Post = () => {
     return <NoData title="Post" />;
   }
   if (loading) {
-    return <Loading title="Loading..." />;
+    return <Loading title="Loading..." maxWidth="700px" />;
   }
 
   return (
     <PageContainer>
       <Box flex={1} width="100%" maxWidth="700px" height="100%">
-      <PageHeader title={post?.title ?? 'Post not found'} />
+        <PageHeader title={post?.title ?? 'Post not found'} />
         <Box marginBottom="24px">
           <PostImage
             src={post?.image?.data}
@@ -96,7 +103,7 @@ export const Post = () => {
             <Button startIcon={<DeleteIcon />} onClick={handleDelete}>
               Delete Post
             </Button>
-            <Button startIcon={<EditIcon />} onClick={handleUpdate}>
+            <Button startIcon={<EditIcon />} onClick={handleEditClick}>
               Edit Post
             </Button>
           </Box>

@@ -1,6 +1,6 @@
 import { Box, Paper, styled } from '@mui/material';
 import { routes, sidebarRoutes } from '../../config/navigation/navigation';
-import { Link } from '../link/Link';
+import { Link } from '../base/link/Link';
 
 const SidebarContainer = styled(Paper)({
   width: '25vw',

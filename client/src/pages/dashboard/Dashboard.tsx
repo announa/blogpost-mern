@@ -1,10 +1,10 @@
 import { Grid2 } from '@mui/material';
-import { PageContainer } from '../../components/page-container/PageContainer';
-import { PageHeader } from '../../components/page-header/PageHeader';
-import { PaperBackground } from '../../components/paper-background/PaperBackground';
-import { PaperCard } from '../../components/paper-card/PaperCard';
+import { Link } from '../../components/base/link/Link';
+import { PaperBackground } from '../../components/base/paper-background/PaperBackground';
+import { PaperCard } from '../../components/base/paper-card/PaperCard';
+import { PageContainer } from '../../components/page/page-container/PageContainer';
+import { PageHeader } from '../../components/page/page-header/PageHeader';
 import { routes } from '../../config/navigation/navigation';
-import { Link } from '../../components/link/Link';
 
 export const Dashboard = () => {
   const actions = [

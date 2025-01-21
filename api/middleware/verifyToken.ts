@@ -3,6 +3,7 @@ import { readFileSync } from 'fs';
 import { JwtPayload, verify } from 'jsonwebtoken';
 import { HTTPError } from '../class/HTTPError';
 import { handleError } from '../helper/errorHandling';
+import jwt from 'jsonwebtoken';
 
 declare global {
   namespace Express {
@@ -36,7 +37,6 @@ const getPublicKey = () => {
 };
 
 export const verifyToken = (req: Request, res: Response, next: NextFunction) => {
-  console.log(req.originalUrl);
   console.log('Verifying token');
   try {
     const authHeader = req.headers['authorization'];

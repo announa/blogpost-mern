@@ -2,13 +2,14 @@ import axios from 'axios';
 import { enqueueSnackbar } from 'notistack';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../config/navigation/navigation';
+import { useUserContext } from '../context/useUserContext';
 import { handleError } from '../utils/errorHandling';
-import { getAccessToken } from '../utils/getToken';
-import { useUserContext } from '../context/UserContext';
+import { useToken } from './useToken';
 
 export const useLogout = () => {
   const navigate = useNavigate();
   const userContext = useUserContext();
+  const { getAccessToken } = useToken();
 
   const removeStorageData = () => {
     localStorage.clear();
@@ -16,7 +17,7 @@ export const useLogout = () => {
 
   const logout = async (customAction?: () => void) => {
     try {
-      const accessToken = await getAccessToken(enqueueSnackbar);
+      const accessToken = await getAccessToken();
       await axios.post(
         `${import.meta.env.VITE_AUTH_URL}/logout`,
         {},

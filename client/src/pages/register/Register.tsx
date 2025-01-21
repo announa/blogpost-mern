@@ -5,11 +5,11 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import validator from 'validator';
 import { z } from 'zod';
-import { Button } from '../../components/button/Button';
-import { Link } from '../../components/link/Link';
-import { PageContainer } from '../../components/page-container/PageContainer';
-import { PageHeader } from '../../components/page-header/PageHeader';
-import { PaperCard } from '../../components/paper-card/PaperCard';
+import { Button } from '../../components/base/button/Button';
+import { Link } from '../../components/base/link/Link';
+import { PaperCard } from '../../components/base/paper-card/PaperCard';
+import { PageContainer } from '../../components/page/page-container/PageContainer';
+import { PageHeader } from '../../components/page/page-header/PageHeader';
 import { routes } from '../../config/navigation/navigation';
 import { handleError, handleZodSafeParseError } from '../../utils/errorHandling';
 
@@ -128,7 +128,7 @@ export const Register = () => {
 
   return (
     <PageContainer>
-      <PaperCard maxWidth="500px" padding="50px">
+      <PaperCard maxWidth="450px">
         <PageHeader title="Register" textAlign="center" />
         <StyledForm onSubmit={handleRegistration}>
           <div>

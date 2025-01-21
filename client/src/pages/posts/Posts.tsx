@@ -3,17 +3,16 @@ import { Box, Grid2 } from '@mui/material';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { useEffect, useState } from 'react';
-import { Link } from '../../components/link/Link';
-import { PageContainer } from '../../components/page-container/PageContainer';
-import { PageHeader } from '../../components/page-header/PageHeader';
-import { PaperCard } from '../../components/paper-card/PaperCard';
-import { Author, Date, Summary } from '../../components/post-content/PostContent';
-import { PostImage } from '../../components/post-image/PostImage';
+import { Link } from '../../components/base/link/Link';
+import { PageContainer } from '../../components/page/page-container/PageContainer';
+import { PageHeader } from '../../components/page/page-header/PageHeader';
+import { Author, Date, Summary } from '../../components/post/post-content/PostContent';
+import { PostImage } from '../../components/post/post-image/PostImage';
 import { routes } from '../../config/navigation/navigation';
 import { Post } from '../../types/types';
 import { handleError } from '../../utils/errorHandling';
-import { NoData } from '../no-data/NoData';
 import { Loading } from '../loading/Loading';
+import { NoData } from '../no-data/NoData';
 
 export const Posts = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -43,7 +42,7 @@ export const Posts = () => {
     return <NoData title="Posts" />;
   }
   if (loading) {
-    return <Loading textAlign='center' title="Posts" />;
+    return <Loading textAlign="center" title="Posts" />;
   }
   return (
     <PageContainer>
@@ -52,7 +51,7 @@ export const Posts = () => {
         {posts.map((post) => (
           <Grid2 key={post.id} size={{ xs: 12, md: 6, lg: 4 }}>
             <Link to={`${routes.post.baseRoute}/${post.id}`}>
-              <PaperCard>
+              <Box>
                 {post.image ? (
                   <PostImage src={post.image?.data} imageProps={{ alt: post.title }} />
                 ) : (
@@ -72,7 +71,7 @@ export const Posts = () => {
                   <Date>{post.createdAt}</Date>
                   <Summary>{post.summary}</Summary>
                 </Box>
-              </PaperCard>
+              </Box>
             </Link>
           </Grid2>
         ))}

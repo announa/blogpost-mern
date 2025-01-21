@@ -6,16 +6,16 @@ import { useSnackbar } from 'notistack';
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import 'react-quill/dist/quill.snow.css';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Button } from '../../components/button/Button';
+import { Button } from '../../components/base/button/Button';
 import { Editor } from '../../components/editor/Editor';
-import { PageContainer } from '../../components/page-container/PageContainer';
-import { PageHeader } from '../../components/page-header/PageHeader';
-import { PostImage } from '../../components/post-image/PostImage';
+import { PageContainer } from '../../components/page/page-container/PageContainer';
+import { PageHeader } from '../../components/page/page-header/PageHeader';
+import { PostImage } from '../../components/post/post-image/PostImage';
 import { routes } from '../../config/navigation/navigation';
 import { Post } from '../../types/types';
 import { handleError } from '../../utils/errorHandling';
-import { getAccessToken } from '../../utils/getToken';
 import { Loading } from '../loading/Loading';
+import { useToken } from '../../hooks/useToken';
 
 const StyledForm = styled('form')(({ theme }) => ({
   display: 'flex',
@@ -48,6 +48,7 @@ export const EditPost = () => {
   const { enqueueSnackbar } = useSnackbar();
   const { pathname } = useLocation();
   const { id } = useParams();
+  const { getAccessToken } = useToken();
   const [currentPost, setCurrentPost] = useState<PostToEdit | null>(null);
   const [postToUpload, setPostToUpload] = useState(initialPost);
   const [newImage, setNewImage] = useState<File | null | undefined>(undefined);
@@ -60,30 +61,42 @@ export const EditPost = () => {
     [editMode, newImage]
   );
 
-  const isSubmitDisabled = useMemo(
-    () => isEqual(currentPost, postToUpload) && !shouldUploadImage,
-    [currentPost, postToUpload, shouldUploadImage]
-  );
+  const isSubmitDisabled = useMemo(() => {
+    const sanitizedCurrentContent = currentPost?.content.replace('\r\n', '\n');
+    const sanitizedPostToUploadContent = postToUpload?.content.replace('\r\n', '\n');
+    return (
+      isEqual(
+        { ...currentPost, content: sanitizedCurrentContent },
+        { ...postToUpload, content: sanitizedPostToUploadContent }
+      ) && !shouldUploadImage
+    );
+  }, [currentPost, postToUpload, shouldUploadImage]);
+
 
   const pageTitle = useMemo(() => {
-    const title = editMode ? 'Edit Post' : 'Add Post'
-    if(loading && isSubmitDisabled) {
-      return 'Loading...'
+    const title = editMode ? 'Edit Post' : 'Add Post';
+    if (loading && isSubmitDisabled) {
+      return 'Loading...';
     } else if (loading && !isSubmitDisabled) {
-      return 'Updating Post...'
+      return 'Updating Post...';
     } else {
-      return title
+      return title;
     }
-  }, [loading, editMode, isSubmitDisabled])
+  }, [loading, editMode, isSubmitDisabled]);
 
   useEffect(() => {
-    if (id) {
-      setEditMode(true);
-    } else if (pathname !== routes.addPost.route && !id) {
+    setEditMode(!!id);
+    if (pathname !== routes.addPost.route && !id) {
       navigate(routes.addPost.route);
       enqueueSnackbar('Post not found', { variant: 'error', autoHideDuration: 3000 });
     }
-  }, []);
+  }, [pathname, id]);
+
+  const clearState = () => {
+    setCurrentPost(null);
+    setPostToUpload(initialPost);
+    setCurrentImage(null);
+  };
 
   const getPost = async () => {
     try {
@@ -117,6 +130,8 @@ export const EditPost = () => {
         }
         setLoading(false);
       });
+    } else if (currentPost) {
+      clearState();
     }
   }, [editMode]);
 
@@ -149,7 +164,7 @@ export const EditPost = () => {
 
   const createPost = async (formData: FormData) => {
     try {
-      const accessToken = await getAccessToken(enqueueSnackbar);
+      const accessToken = await getAccessToken();
       if (!accessToken) {
         navigate(routes.login.route, { state: { lastVisited: window.location.href } });
       }
@@ -169,9 +184,9 @@ export const EditPost = () => {
 
   const updatePost = async (formData: FormData) => {
     try {
-      const accessToken = await getAccessToken(enqueueSnackbar);
-      console.log('accessToken, ', accessToken);
+      const accessToken = await getAccessToken();
       if (!accessToken) {
+        enqueueSnackbar('Unauthorized', { variant: 'error' });
         navigate(routes.login.route, { state: { lastVisited: window.location.href } });
       } else {
         const result = await axios.put(`${import.meta.env.VITE_POSTS_URL}/${id}`, formData, {
@@ -192,7 +207,7 @@ export const EditPost = () => {
     event.preventDefault();
     const formData = createFormData();
     let postId = null;
-    setLoading(true)
+    setLoading(true);
     if (!editMode) {
       postId = await createPost(formData);
     } else {
@@ -201,7 +216,7 @@ export const EditPost = () => {
     if (postId) {
       navigate(`${routes.post.baseRoute}/${postId}`);
     } else {
-      setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -211,11 +226,11 @@ export const EditPost = () => {
   };
 
   if (loading) {
-    return <Loading title={pageTitle} />;
+    return <Loading title={pageTitle} maxWidth="700px" />;
   }
 
   return (
-    <PageContainer>
+    <PageContainer key={id}>
       <PageHeader title={pageTitle} />
 
       <StyledForm onSubmit={handleSubmit}>

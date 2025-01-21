@@ -80,15 +80,15 @@ export const login = async (req: Request, res: Response) => {
 };
 
 export const logout = async (req: Request, res: Response) => {
-  try{
-  const userId = req.userId
-  const response = (await RefreshToken.findOneAndDelete({ user: userId }).lean());
-  console.log(response)
-  res.status(200).send('Successfully logged out')
-  } catch (error){
-    handleError(error, res)
+  try {
+    const userId = req.userId;
+    const response = await RefreshToken.findOneAndDelete({ user: userId }).lean();
+    console.log(response);
+    res.status(200).send('Successfully logged out');
+  } catch (error) {
+    handleError(error, res);
   }
-}
+};
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -107,7 +107,7 @@ export const register = async (req: Request, res: Response) => {
 export const token = async (req: Request, res: Response) => {
   try {
     const refreshToken = req.body.token;
-    console.log('refreshToken: ', refreshToken)
+    console.log('refreshToken: ', refreshToken);
     if (!refreshToken) {
       throw new HTTPError('Invalid request: token missing', 404);
     }
@@ -116,8 +116,13 @@ export const token = async (req: Request, res: Response) => {
     if (!userId) {
       throw new HTTPError('Invalid refresh token', 404);
     } else {
-      const response = (await RefreshToken.findOne({ user: userId, token: refreshToken }).lean());
-      const dbRefreshToken = response?.token[0]
+      const response = await RefreshToken.findOne(
+        { user: userId, token: refreshToken },
+        {
+          'token.$': 1,
+        }
+      ).lean();
+      const dbRefreshToken = response?.token[0];
       console.log('DB REFRESH TOKEN', dbRefreshToken);
       if (!dbRefreshToken || dbRefreshToken !== refreshToken) {
         throw new HTTPError('Unauthorized', 401);

@@ -1,14 +1,16 @@
+import { styled } from '@mui/material';
+import { useEffect, useRef } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { PaperCard } from './components/base/paper-card/PaperCard';
 import { NavBar } from './components/nav/NavBar';
-import { PaperBackground } from './components/paper-background/PaperBackground';
 import { routes } from './config/navigation/navigation';
-import { useUserContext } from './context/UserContext';
+import { useUserContext } from './context/useUserContext';
 import { EditPost } from './pages/edit-post/EditPost';
+import { Login } from './pages/login/Login';
 import { Post } from './pages/post/Post';
 import { Posts } from './pages/posts/Posts';
 import { Register } from './pages/register/Register';
-import { Login } from './pages/login/Login';
-import { styled } from '@mui/material';
+import { useToken } from './hooks/useToken';
 
 const MainContainer = styled('div')({
   height: '100vh',
@@ -22,13 +24,37 @@ const MainContainer = styled('div')({
   position: 'relative',
   padding: '10px',
   backgroundColor: '#efefef',
+  ['@media (min-width: 1200px)']: {
+    padding: '10px 15vw',
+  },
 });
 
 export const Main = () => {
   const userContext = useUserContext();
+  const {getAccessToken} = useToken()
+  const timeoutId = useRef<number | undefined>(undefined)
+
+  const verifyUserIsLoggedIn = () => {
+    clearTimeout(timeoutId.current);
+    if (userContext?.refreshTokenExpiration) {
+      const newTimeout = userContext?.refreshTokenExpiration - Date.now();
+      timeoutId.current = (
+        setTimeout(async () => {
+          await getAccessToken();
+        }, newTimeout)
+      );
+    } else {
+      timeoutId.current = (undefined);
+    }
+  };
+
+  useEffect(() => {
+    verifyUserIsLoggedIn();
+  }, [userContext?.refreshTokenExpiration]);
+
   return (
     <MainContainer>
-      <PaperBackground flex={1}>
+      <PaperCard flex={1}>
         <NavBar />
         <Routes>
           <Route
@@ -50,7 +76,7 @@ export const Main = () => {
             element={!userContext?.user ? <Register /> : <Navigate to={routes.posts.route} replace />}
           />
         </Routes>
-      </PaperBackground>
+      </PaperCard>
     </MainContainer>
   );
 };

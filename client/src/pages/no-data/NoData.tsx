@@ -1,6 +1,6 @@
 import { Box, Typography } from '@mui/material';
-import { ContentContainerProps, PageContainer } from '../../components/page-container/PageContainer';
-import { PageHeader } from '../../components/page-header/PageHeader';
+import { ContentContainerProps, PageContainer } from '../../components/page/page-container/PageContainer';
+import { PageHeader } from '../../components/page/page-header/PageHeader';
 
 export interface NoDataProps extends ContentContainerProps {
   title: string;

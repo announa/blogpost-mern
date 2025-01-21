@@ -2,11 +2,11 @@ import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined
 import { Box, Menu, MenuItem } from '@mui/material';
 import { MouseEvent, useMemo, useState } from 'react';
 import { routes, sidebarRoutes } from '../../config/navigation/navigation';
-import { useUserContext } from '../../context/UserContext';
+import { useUserContext } from '../../context/useUserContext';
 import { useLogout } from '../../hooks/useLogout';
-import { Button } from '../button/Button';
-import { Link } from '../link/Link';
-import { LoadingOverlay } from '../loading-overlay/LoadingOverlay';
+import { Button } from '../base/button/Button';
+import { Link } from '../base/link/Link';
+import { LoadingOverlay } from '../base/loading-overlay/LoadingOverlay';
 
 export const NavBar = () => {
   const userContext = useUserContext();
@@ -16,7 +16,7 @@ export const NavBar = () => {
 
   const handleLogout = async () => {
     setLoading(true);
-    setMenuAnchor(null)
+    setMenuAnchor(null);
     await logout(() => setLoading(false));
   };
   const isMenuOpen = useMemo(() => !!menuAnchor, [menuAnchor]);
