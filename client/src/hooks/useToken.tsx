@@ -22,42 +22,40 @@ export const useToken = () => {
     }
   };
 
-  const getTokenFromLocalStorage = (type: TokenType) => {
+  const getStorageItem = (type: TokenType) => {
     try {
-      const storageToken = localStorage.getItem(type);
-      if (!storageToken) {
+      const storageItem = localStorage.getItem(type);
+      if (!storageItem) {
         return null;
       }
-      const token = JSON.parse(storageToken);
-      const expiration = token?.expiration;
+      const token: StorageToken = JSON.parse(storageItem);
+      return token
+  } catch {
+    return null
+  }
+}
+
+  const getTokenFromLocalStorage = (type: TokenType): string | null => {
+    try {
+      const storageToken = getStorageItem(type)
+      const expiration = storageToken?.expiration;
       const now = Date.now();
-      if (expiration > now) {
-        return token.token;
-      } else {
-        console.log(`${type} has expired`);
+      if(!storageToken){
+        return null
+      }
+      if (!expiration || expiration < now) {
         removeStorageData(type);
         return null;
+      } else {
+        return storageToken.token;
       }
     } catch {
       return null;
     }
   };
 
-  const getAccessToken = async () => {
-    let accessToken = getTokenFromLocalStorage('accessToken');
-    if (!accessToken) {
-      accessToken = await requestAccessToken();
-    }
-    return accessToken;
-  };
-
-  const requestAccessToken = async () => {
+  const requestAccessToken = async (refreshToken: string) => {
     try {
-      const refreshToken = getTokenFromLocalStorage('refreshToken');
-      if (!refreshToken) {
-        userContext?.setUser(null);
-        return null;
-      }
       const result = await axios.post<{ accessToken: StorageToken }>(
         `${import.meta.env.VITE_AUTH_URL}/token`,
         {
@@ -76,5 +74,18 @@ export const useToken = () => {
     }
   };
 
-  return { getAccessToken, getTokenFromLocalStorage };
+  const getAccessToken = async () => {
+    let accessToken = getTokenFromLocalStorage('accessToken');
+    if (!accessToken) {
+      const refreshToken = getTokenFromLocalStorage('refreshToken');
+      if (!refreshToken) {
+        userContext?.setUser(null);
+        return null;
+      }
+      accessToken = await requestAccessToken(refreshToken);
+    }
+    return accessToken;
+  };
+
+  return { getAccessToken, getTokenFromLocalStorage, getStorageItem };
 };

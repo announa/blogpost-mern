@@ -5,12 +5,12 @@ import { PaperCard } from './components/base/paper-card/PaperCard';
 import { NavBar } from './components/nav/NavBar';
 import { routes } from './config/navigation/navigation';
 import { useUserContext } from './context/useUserContext';
+import { useToken } from './hooks/useToken';
 import { EditPost } from './pages/edit-post/EditPost';
 import { Login } from './pages/login/Login';
 import { Post } from './pages/post/Post';
 import { Posts } from './pages/posts/Posts';
 import { Register } from './pages/register/Register';
-import { useToken } from './hooks/useToken';
 
 const MainContainer = styled('div')({
   height: '100vh',
@@ -31,20 +31,16 @@ const MainContainer = styled('div')({
 
 export const Main = () => {
   const userContext = useUserContext();
-  const {getAccessToken} = useToken()
-  const timeoutId = useRef<number | undefined>(undefined)
+  const { getAccessToken } = useToken();
+  const timeoutId = useRef<number | undefined>(undefined);
 
   const verifyUserIsLoggedIn = () => {
     clearTimeout(timeoutId.current);
     if (userContext?.refreshTokenExpiration) {
       const newTimeout = userContext?.refreshTokenExpiration - Date.now();
-      timeoutId.current = (
-        setTimeout(async () => {
-          await getAccessToken();
-        }, newTimeout)
-      );
-    } else {
-      timeoutId.current = (undefined);
+      timeoutId.current = setTimeout(async () => {
+        await getAccessToken();
+      }, newTimeout);
     }
   };
 
@@ -54,7 +50,7 @@ export const Main = () => {
 
   return (
     <MainContainer>
-      <PaperCard flex={1}>
+      <PaperCard flex={1} cardProps={{ padding: '50px 0' }}>
         <NavBar />
         <Routes>
           <Route

@@ -8,20 +8,28 @@ import { User, UserContext } from './useUserContext';
 
 export const UserContextProvider = ({ children }: { children: ReactNode }) => {
   const { enqueueSnackbar } = useSnackbar();
-  const { getAccessToken } = useToken();
+  const { getAccessToken, getStorageItem } = useToken();
   const [user, setUser] = useState<User | null>(null);
   const [refreshTokenExpiration, setRefreshTokenExpiration] = useState<number | null>(null);
 
   const getUserData = async () => {
     try {
       const accessToken = await getAccessToken();
-      const result = await axios.get(import.meta.env.VITE_USER_URL, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      const userData = result.data ?? null;
-      setUser(userData);
+      const refreshToken = getStorageItem('refreshToken');
+      if (refreshToken?.expiration) {
+        setRefreshTokenExpiration(refreshToken.expiration);
+      } else if (accessToken && refreshToken && !refreshToken.expiration) {
+        console.warn('Refresh token expiration missing. Automatic user login verification not possible');
+      }
+      if (accessToken) {
+        const result = await axios.get(import.meta.env.VITE_USER_URL, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        const userData = result.data ?? null;
+        setUser(userData);
+      }
     } catch (error) {
       handleError(error, enqueueSnackbar);
     }
