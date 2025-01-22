@@ -1,6 +1,6 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { Box } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { useEffect, useState } from 'react';
@@ -26,6 +26,7 @@ import { Loading } from '../loading/Loading';
 import { NoData } from '../no-data/NoData';
 
 export const Post = () => {
+  const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
   const userContext = useUserContext();
   const navigate = useNavigate();
@@ -81,7 +82,17 @@ export const Post = () => {
 
   return (
     <PageContainer>
-      <Box flex={1} width="100%" maxWidth="700px" height="100%">
+      <Box
+        flex={1}
+        width="100%"
+        maxWidth="700px"
+        height="100%"
+        sx={{
+          [theme.breakpoints.up('md')]: {
+            width: '75%',
+          },
+        }}
+      >
         <PageHeader title={post?.title ?? 'Post not found'} />
         <Box marginBottom="24px">
           <PostImage

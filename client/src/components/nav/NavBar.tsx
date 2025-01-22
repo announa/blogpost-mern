@@ -31,6 +31,8 @@ export const NavBar = () => {
       justifyContent="space-between"
       alignItems="center"
       padding="0 50px"
+      zIndex={2}
+      sx={{background: 'white'}}
     >
       <Box display="flex" gap="24px">
         {sidebarRoutes.flatMap((route) =>

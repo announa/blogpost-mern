@@ -7,8 +7,8 @@ export const PageContainer = ({ children, ...props }: BoxProps) => {
       display="flex"
       alignItems="center"
       flexDirection="column"
-      marginTop="80px"
       overflow="auto"
+      padding='100px 50px 0'
       {...props}
     >
       {children}
