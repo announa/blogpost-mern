@@ -1,12 +1,11 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { Box, useTheme } from '@mui/material';
+import { Box, IconButton, Tooltip, useTheme } from '@mui/material';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import sanitize from 'sanitize-html';
-import { Button } from '../../components/base/button/Button';
 import { PageContainer } from '../../components/page/page-container/PageContainer';
 import { PageHeader } from '../../components/page/page-header/PageHeader';
 import {
@@ -22,9 +21,9 @@ import { useUserContext } from '../../context/useUserContext';
 import { useToken } from '../../hooks/useToken';
 import { Post as IPost } from '../../types/types';
 import { handleError } from '../../utils/errorHandling';
+import { formatDate } from '../../utils/formatDate';
 import { Loading } from '../loading/Loading';
 import { NoData } from '../no-data/NoData';
-import { formatDate } from '../../utils/formatDate';
 
 export const Post = () => {
   const theme = useTheme();
@@ -81,20 +80,36 @@ export const Post = () => {
     return <Loading title="Loading..." maxWidth="700px" />;
   }
 
+  const EditButtons = (
+    <Box display="flex" justifyContent="space-between">
+      <Tooltip title="Edit Article">
+        <IconButton sx={{ '&:focus': { outline: 'none' } }} onClick={handleEditClick}>
+          <EditIcon />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Delete Article">
+        <IconButton sx={{ '&:focus': { outline: 'none' } }} onClick={handleDelete}>
+          <DeleteIcon />
+        </IconButton>
+      </Tooltip>
+    </Box>
+  );
+
   return (
     <PageContainer>
       <Box
         flex={1}
-        width="100%"
         maxWidth="700px"
-        height="100%"
         sx={{
           [theme.breakpoints.up('md')]: {
             width: '75%',
           },
         }}
       >
-        <PageHeader title={post?.title ?? 'Post not found'} />
+        <PageHeader
+          title={post?.title ?? 'Post not found'}
+          customElement={userContext?.user ? EditButtons : undefined}
+        />
         <Box marginBottom="24px">
           <PostImage
             src={post?.image?.data}
@@ -110,16 +125,6 @@ export const Post = () => {
           <Summary>{post?.summary}</Summary>
           <Content dangerouslySetInnerHTML={post?.content ? { __html: sanitize(post.content) } : undefined} />
         </Box>
-        {userContext?.user && (
-          <Box display="flex" justifyContent="space-between" marginTop="36px">
-            <Button startIcon={<DeleteIcon />} onClick={handleDelete}>
-              Delete Post
-            </Button>
-            <Button startIcon={<EditIcon />} onClick={handleEditClick}>
-              Edit Post
-            </Button>
-          </Box>
-        )}
       </Box>
     </PageContainer>
   );

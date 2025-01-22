@@ -1,13 +1,17 @@
-import { Typography, TypographyProps } from '@mui/material';
+import { Box, Typography, TypographyProps } from '@mui/material';
 
 export interface PageHeaderProps extends TypographyProps {
   title: string;
+  customElement?: JSX.Element
 }
 
-export const PageHeader = ({ title, ...props }: PageHeaderProps) => {
+export const PageHeader = ({ title, customElement, ...props }: PageHeaderProps) => {
   return (
-    <Typography component="h1" variant="h5" marginBottom="40px" {...props}>
+    <Box marginBottom="40px" display='flex' justifyContent='space-between' alignItems='center'>
+    <Typography component="h1" variant="h5"  {...props}>
       {title}
     </Typography>
+    {customElement}
+    </Box>
   );
 };

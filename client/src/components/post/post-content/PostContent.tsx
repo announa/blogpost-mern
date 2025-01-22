@@ -30,8 +30,8 @@ export const Summary = styled('p')({
   fontSize: '14px',
   fontWeight: 600,
   display: '-webkit-box',
-  '-webkit-line-clamp': '4',
-  '-webkit-box-orient': 'vertical',
+  'WebkitLineClamp': '4',
+  'WebkitBoxOrient': 'vertical',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
 })

@@ -90,7 +90,6 @@ export const EditPost = () => {
   );
 
   const isSubmitDisabled = useMemo(() => {
-    console.log('postToUpload: ', postToUpload);
     const sanitizedCurrentContent = currentPost?.content.replace('\r\n', '\n');
     const sanitizedPostToUploadContent = postToUpload?.content.replace('\r\n', '\n');
     if (editMode) {
@@ -108,7 +107,7 @@ export const EditPost = () => {
   }, [currentPost, postToUpload, shouldUploadImage]);
 
   const pageTitle = useMemo(() => {
-    const title = editMode ? 'Edit Post' : 'Add Post';
+    const title = editMode ? 'Edit Article' : 'Write an Article';
     if (loading && isSubmitDisabled) {
       return 'Loading...';
     } else if (loading && !isSubmitDisabled) {
@@ -126,9 +125,12 @@ export const EditPost = () => {
     }
   }, [pathname, id]);
 
+  useEffect(() => {
+    setPostToUpload(currentPost ?? initialPost);
+  }, [currentPost]);
+
   const clearState = () => {
     setCurrentPost(null);
-    setPostToUpload(initialPost);
     setCurrentImage(null);
   };
 
@@ -146,12 +148,6 @@ export const EditPost = () => {
       setLoading(true);
       getPost().then((data) => {
         if (data) {
-          setPostToUpload({
-            title: data.title,
-            author: data.author,
-            summary: data.summary,
-            content: data.content,
-          });
           setCurrentPost({
             title: data.title,
             author: data.author,
@@ -326,7 +322,7 @@ export const EditPost = () => {
           border={currentImage ? 'none' : '1px solid #cdcdcd'}
           borderRadius="4px"
         >
-          <Box>
+          <Box flex={1}>
             <PostImage src={currentImage} />
             {currentImage && (
               <Tooltip title="Delete Image">
@@ -344,8 +340,8 @@ export const EditPost = () => {
             )}
           </Box>
         </Box>
-        <Box display="flex" justifyContent="space-between">
-          <Button variant="outlined" onClick={() => navigate(routes.posts.route)}>
+        <Box display="flex" justifyContent="space-between" gap="24px">
+          <Button variant="outlined" onClick={() => navigate(`${routes.post.baseRoute}/${id}`)}>
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitDisabled}>

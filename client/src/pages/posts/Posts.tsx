@@ -3,12 +3,11 @@ import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { useEffect, useState } from 'react';
 import { PageContainer } from '../../components/page/page-container/PageContainer';
-import { PageHeader } from '../../components/page/page-header/PageHeader';
+import { Post as PostType } from '../../types/types';
 import { handleError } from '../../utils/errorHandling';
 import { Loading } from '../loading/Loading';
 import { NoData } from '../no-data/NoData';
 import { Post } from './components/Post';
-import { Post as PostType} from '../../types/types';
 
 export const Posts = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -42,10 +41,9 @@ export const Posts = () => {
   }
   return (
     <PageContainer>
-      <PageHeader title="Posts" />
       <Grid2 container spacing={6}>
         {posts.map((post) => (
-          <Post post={post} />
+          <Post key={post.id} post={post} />
         ))}
       </Grid2>
     </PageContainer>

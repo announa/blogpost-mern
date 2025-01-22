@@ -50,7 +50,7 @@ export const Main = () => {
 
   return (
     <MainContainer>
-      <PaperCard flex={1} cardProps={{ padding: '50px 0' }}>
+      <PaperCard flex={1} cardProps={{ padding: '0 50px 70px' }}>
         <NavBar />
         <Routes>
           <Route
