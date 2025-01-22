@@ -1,7 +1,7 @@
 import { styled, TextField, Typography, useTheme } from '@mui/material';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, FormEvent, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import validator from 'validator';
 import { z } from 'zod';
@@ -14,8 +14,9 @@ import { PageContainer } from '../../components/page/page-container/PageContaine
 import { PageHeader } from '../../components/page/page-header/PageHeader';
 import { routes } from '../../config/navigation/navigation';
 import { User, useUserContext } from '../../context/useUserContext';
+import { useError } from '../../hooks/useError';
 import { StorageToken } from '../../hooks/useToken';
-import { handleError, handleZodSafeParseError } from '../../utils/errorHandling';
+import { handleError } from '../../utils/errorHandling';
 
 type LoginResult = {
   accessToken: StorageToken;
@@ -36,9 +37,14 @@ const initialUserData = {
   password: '',
 };
 
+const errorMessages = {
+  email: 'A valid email is required',
+  password: 'Password is required',
+};
+
 const loginInputParser = z.object({
-  email: z.string().refine((value) => validator.isEmail(value), { message: 'A valid email is required' }),
-  password: z.string().nonempty({ message: 'Password is required' }),
+  email: z.string().refine((value) => validator.isEmail(value), { message: errorMessages.email }),
+  password: z.string().nonempty({ message: errorMessages.password }),
 });
 
 export const Login = () => {
@@ -48,25 +54,16 @@ export const Login = () => {
   const { enqueueSnackbar } = useSnackbar();
   const { state } = useLocation();
   const [userData, setUserData] = useState(initialUserData);
-  const [error, setError] = useState(initialUserData);
   const [loading, setLoading] = useState(false);
+  const { error, validatedInput, validateInput } = useError({
+    data: userData,
+    errorMessages,
+    inputParser: loginInputParser,
+  });
 
-  const validatedUserData = useMemo(() => loginInputParser.safeParse(userData), [userData]);
   const redirectUrl = useMemo(() => state?.lastVisited ?? routes.posts.route, []);
 
-  useEffect(() => {
-    const newError = handleZodSafeParseError(error, validatedUserData);
-    setError(newError);
-  }, [validatedUserData]);
-
-  const verifyInput = (field: keyof typeof error) => {
-    const issue = validatedUserData.error?.issues.find((issue) => issue.path[0] === field);
-    if (issue) {
-      setError({ ...error, [field]: issue.message });
-    }
-  };
-
-  const isSubmitDisabled = !validatedUserData.data;
+  const isSubmitDisabled = !validatedInput.success;
 
   const handleAuthResponse = (accessToken: StorageToken, refreshToken: StorageToken, user: User) => {
     if (!accessToken || !refreshToken) {
@@ -85,7 +82,7 @@ export const Login = () => {
     try {
       const result = await axios.post<LoginResult>(
         `${import.meta.env.VITE_AUTH_URL}${routes.login.route}`,
-        validatedUserData.data,
+        validatedInput.data,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -124,7 +121,7 @@ export const Login = () => {
               value={userData.email}
               required
               fullWidth
-              onBlur={() => verifyInput('email')}
+              onBlur={() => validateInput('email')}
               onChange={(event) => handleChange(event, 'email')}
               error={!!error.email}
             />
@@ -138,7 +135,7 @@ export const Login = () => {
               value={userData.password}
               required
               fullWidth
-              onBlur={() => verifyInput('password')}
+              onBlur={() => validateInput('password')}
               onChange={(event) => handleChange(event, 'password')}
               error={!!error.password}
             />

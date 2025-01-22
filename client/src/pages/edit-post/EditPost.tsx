@@ -6,16 +6,19 @@ import { useSnackbar } from 'notistack';
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import 'react-quill/dist/quill.snow.css';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { z } from 'zod';
 import { Button } from '../../components/base/button/Button';
+import { ErrorMessage } from '../../components/base/error-message/ErrorMessage';
 import { Editor } from '../../components/editor/Editor';
 import { PageContainer } from '../../components/page/page-container/PageContainer';
 import { PageHeader } from '../../components/page/page-header/PageHeader';
 import { PostImage } from '../../components/post/post-image/PostImage';
 import { routes } from '../../config/navigation/navigation';
+import { useError } from '../../hooks/useError';
+import { useToken } from '../../hooks/useToken';
 import { Post } from '../../types/types';
 import { handleError } from '../../utils/errorHandling';
 import { Loading } from '../loading/Loading';
-import { useToken } from '../../hooks/useToken';
 
 const StyledForm = styled('form')(({ theme }) => ({
   display: 'flex',
@@ -40,6 +43,26 @@ const initialPost = {
   content: '',
 };
 
+const errorMessages = {
+  title: 'Title is required',
+  author: 'Author is required',
+  summary: 'Summary is required',
+  content: 'Content is required',
+};
+
+const postInputParser = z.object({
+  title: z.string().nonempty({ message: errorMessages.title }),
+  author: z.string().nonempty({ message: errorMessages.author }),
+  summary: z.string().nonempty({ message: errorMessages.summary }),
+  content: z
+    .string()
+    .nonempty({ message: errorMessages.content })
+    .refine((value) => {
+      const removedLinebreaks = value.replace(/<p><br><\/p>/g, '');
+      return removedLinebreaks.length > 0;
+    }, 'Invalid content'),
+});
+
 export type PostToEdit = typeof initialPost;
 type PostKey = keyof PostToEdit;
 
@@ -55,6 +78,11 @@ export const EditPost = () => {
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { error, validateInput, validatedInput } = useError({
+    data: postToUpload,
+    errorMessages,
+    inputParser: postInputParser,
+  });
 
   const shouldUploadImage = useMemo(
     () => (!editMode && newImage) || (editMode && newImage !== undefined),
@@ -62,16 +90,22 @@ export const EditPost = () => {
   );
 
   const isSubmitDisabled = useMemo(() => {
+    console.log('postToUpload: ', postToUpload);
     const sanitizedCurrentContent = currentPost?.content.replace('\r\n', '\n');
     const sanitizedPostToUploadContent = postToUpload?.content.replace('\r\n', '\n');
-    return (
-      isEqual(
-        { ...currentPost, content: sanitizedCurrentContent },
-        { ...postToUpload, content: sanitizedPostToUploadContent }
-      ) && !shouldUploadImage
-    );
+    if (editMode) {
+      return (
+        (isEqual(
+          { ...currentPost, content: sanitizedCurrentContent },
+          { ...postToUpload, content: sanitizedPostToUploadContent }
+        ) &&
+          !shouldUploadImage) ||
+        !validatedInput.success
+      );
+    } else {
+      return !validatedInput.success;
+    }
   }, [currentPost, postToUpload, shouldUploadImage]);
-
 
   const pageTitle = useMemo(() => {
     const title = editMode ? 'Edit Post' : 'Add Post';
@@ -234,28 +268,53 @@ export const EditPost = () => {
       <PageHeader title={pageTitle} />
 
       <StyledForm onSubmit={handleSubmit}>
-        <TextField
-          label="Title"
-          value={postToUpload.title}
-          type="text"
-          onChange={(event) => setPostToUpload({ ...postToUpload, title: event.target.value })}
-          sx={{ '.MuiInputBase-root': { backgroundColor: 'white' } }}
-        />
-        <TextField
-          label="Author"
-          value={postToUpload.author}
-          type="text"
-          onChange={(event) => setPostToUpload({ ...postToUpload, author: event.target.value })}
-          sx={{ '.MuiInputBase-root': { backgroundColor: 'white' } }}
-        />
-        <TextField
-          label="Summary"
-          value={postToUpload.summary}
-          type="text"
-          onChange={(event) => setPostToUpload({ ...postToUpload, summary: event.target.value })}
-          sx={{ '.MuiInputBase-root': { backgroundColor: 'white' } }}
-        />
-        <Editor post={postToUpload} setPost={setPostToUpload} />
+        <div>
+          <TextField
+            name="title"
+            label="Title"
+            value={postToUpload.title}
+            type="text"
+            required
+            fullWidth
+            onBlur={() => validateInput('title')}
+            onChange={(event) => setPostToUpload({ ...postToUpload, title: event.target.value })}
+            sx={{ '.MuiInputBase-root': { backgroundColor: 'white' } }}
+          />
+          {error.title && <ErrorMessage>{error.title}</ErrorMessage>}
+        </div>
+        <div>
+          <TextField
+            name="author"
+            label="Author"
+            value={postToUpload.author}
+            type="text"
+            required
+            fullWidth
+            onBlur={() => validateInput('author')}
+            onChange={(event) => setPostToUpload({ ...postToUpload, author: event.target.value })}
+            sx={{ '.MuiInputBase-root': { backgroundColor: 'white' } }}
+          />
+          {error.author && <ErrorMessage>{error.author}</ErrorMessage>}
+        </div>
+        <div>
+          <TextField
+            label="Summary"
+            multiline
+            maxRows={3}
+            required
+            fullWidth
+            value={postToUpload.summary}
+            type="text"
+            onBlur={() => validateInput('summary')}
+            onChange={(event) => setPostToUpload({ ...postToUpload, summary: event.target.value })}
+            sx={{ '.MuiInputBase-root': { backgroundColor: 'white' } }}
+          />
+          {error.summary && <ErrorMessage>{error.summary}</ErrorMessage>}
+        </div>
+        <div>
+          <Editor onBlur={() => validateInput('content')} post={postToUpload} setPost={setPostToUpload} />
+          {error.content && <ErrorMessage>{error.content}</ErrorMessage>}
+        </div>
         <input type="file" onChange={uploadImage} />
         <Box
           display="flex"

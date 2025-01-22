@@ -24,6 +24,7 @@ import { Post as IPost } from '../../types/types';
 import { handleError } from '../../utils/errorHandling';
 import { Loading } from '../loading/Loading';
 import { NoData } from '../no-data/NoData';
+import { formatDate } from '../../utils/formatDate';
 
 export const Post = () => {
   const theme = useTheme();
@@ -104,7 +105,7 @@ export const Post = () => {
         <Box flex="1">
           <PostInformation>
             <Author>{post?.author}</Author>
-            <Date>{post?.createdAt}</Date>{' '}
+            <Date>{formatDate(post?.createdAt)}</Date>{' '}
           </PostInformation>
           <Summary>{post?.summary}</Summary>
           <Content dangerouslySetInnerHTML={post?.content ? { __html: sanitize(post.content) } : undefined} />

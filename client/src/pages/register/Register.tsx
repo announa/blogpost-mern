@@ -1,17 +1,19 @@
 import { styled, TextField, Typography, useTheme } from '@mui/material';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import validator from 'validator';
 import { z } from 'zod';
 import { Button } from '../../components/base/button/Button';
+import { ErrorMessage } from '../../components/base/error-message/ErrorMessage';
 import { Link } from '../../components/base/link/Link';
 import { PaperCard } from '../../components/base/paper-card/PaperCard';
 import { PageContainer } from '../../components/page/page-container/PageContainer';
 import { PageHeader } from '../../components/page/page-header/PageHeader';
 import { routes } from '../../config/navigation/navigation';
-import { handleError, handleZodSafeParseError } from '../../utils/errorHandling';
+import { useError } from '../../hooks/useError';
+import { handleError } from '../../utils/errorHandling';
 
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*+?&()"#^-])[A-Za-z\d@$!%*+?&()"#^-]{8,}$/;
 
@@ -23,63 +25,43 @@ const StyledForm = styled('form')({
   gap: '24px',
 });
 
-const ErrorMessage = styled('p')({
-  margin: 0,
-  fontSize: '12px',
-  color: 'red',
-});
-
-enum UserDataKeys {
-  firstName = 'firstName',
-  lastName = 'lastName',
-  email = 'email',
-  userName = 'userName',
-  password = 'password',
-  repeatPassword = 'repeatPassword',
-}
-
 const initialUserData = {
   firstName: '',
   lastName: '',
   userName: '',
   email: '',
   password: '',
+  repeatPassword: '',
 };
 
-const initialError = {
-  firstName: { success: false, message: 'First name is required' },
-  lastName: { success: false, message: 'Last name is required' },
-  userName: { success: false, message: 'User name is required' },
-  email: { success: false, message: 'A valid email is required' },
-  password: {
-    success: false,
-    message:
-      'Invalid password. The password must contain at least 8 characters with at least one lower case and one upper case letter, one number and one special character @$!%*+?&()"#^-',
-  },
-  repeatPassword: {
-    success: false,
-    message: 'Must be the same as password',
-  },
+const errorMessages = {
+  firstName: 'First name is required',
+  lastName: 'Last name is required',
+  userName: 'User name is required',
+  email: 'A valid email is required',
+  password:
+    'Invalid password. The password must contain at least 8 characters with at least one lower case and one upper case letter, one number and one special character @$!%*+?&()"#^-',
+  repeatPassword: 'Must be the same as password',
 };
 
 const registerInputParser = z
   .object({
-    firstName: z.string().nonempty({ message: initialError.firstName.message }),
-    lastName: z.string().nonempty({ message: initialError.lastName.message }),
-    userName: z.string().nonempty({ message: initialError.userName.message }),
-    email: z.string().refine((value) => validator.isEmail(value), { message: initialError.email.message }),
+    firstName: z.string().nonempty({ message: errorMessages.firstName }),
+    lastName: z.string().nonempty({ message: errorMessages.lastName }),
+    userName: z.string().nonempty({ message: errorMessages.userName }),
+    email: z.string().refine((value) => validator.isEmail(value), { message: errorMessages.email }),
     password: z
       .string()
       .nonempty()
-      .refine((password) => PASSWORD_REGEX.test(password), initialError.password.message),
-    repeatPassword: z.string().nonempty({ message: initialError.repeatPassword.message }),
+      .refine((password) => PASSWORD_REGEX.test(password), errorMessages.password),
+    repeatPassword: z.string().nonempty({ message: errorMessages.repeatPassword }),
   })
   .superRefine((input, ctx) => {
     if (input.password !== input.repeatPassword) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: [UserDataKeys.repeatPassword],
-        message: initialError.repeatPassword.message,
+        path: ['repeatPassword'],
+        message: errorMessages.repeatPassword,
       });
     }
   });
@@ -89,32 +71,20 @@ export const Register = () => {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const [userData, setUserData] = useState(initialUserData);
-  const [repeatPassword, setRepeatPassword] = useState('');
-  const [error, setError] = useState({ ...initialUserData, repeatPassword: '' });
+  const { error, validateInput, validatedInput } = useError({
+    data: userData,
+    errorMessages,
+    inputParser: registerInputParser,
+  });
 
-  const validatedUserData = useMemo(() => {
-    const validatedUserData = registerInputParser.safeParse({ ...userData, repeatPassword: repeatPassword });
-    return validatedUserData;
-  }, [userData, repeatPassword]);
-
-  useEffect(() => {
-    const newError = handleZodSafeParseError(error, validatedUserData);
-    setError(newError);
-  }, [validatedUserData]);
-
-  const verifyInput = (field: keyof typeof error) => {
-    const hasError = validatedUserData.error?.issues.find((issue) => issue.path[0] === field);
-    if (hasError) {
-      setError({ ...error, [field]: initialError[field].message });
-    }
-  };
-
-  const isSubmitDisabled = useMemo(() => !validatedUserData.success, [validatedUserData]);
+  const isSubmitDisabled = useMemo(() => !validatedInput.success, [validatedInput]);
 
   const handleRegistration = async (event: FormEvent) => {
     event.preventDefault();
     try {
-      await axios.post(`${import.meta.env.VITE_AUTH_URL}${routes.register.route}`, userData, {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { repeatPassword, ...data } = userData;
+      await axios.post(`${import.meta.env.VITE_AUTH_URL}${routes.register.route}`, data, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -128,18 +98,18 @@ export const Register = () => {
 
   return (
     <PageContainer>
-      <PaperCard maxWidth="450px">
+      <PaperCard maxWidth="450px" maxHeight="unset" marginBottom="50px">
         <PageHeader title="Register" textAlign="center" />
         <StyledForm onSubmit={handleRegistration}>
           <div>
             <TextField
-              name={UserDataKeys.firstName}
+              name="firstName"
               label="First Name"
               type="text"
               required
               fullWidth
               value={userData.firstName}
-              onBlur={() => verifyInput(UserDataKeys.firstName)}
+              onBlur={() => validateInput('firstName')}
               onChange={(event) => setUserData({ ...userData, firstName: event.target.value })}
               error={!!error.firstName}
             />
@@ -147,13 +117,13 @@ export const Register = () => {
           </div>
           <div>
             <TextField
-              name={UserDataKeys.lastName}
+              name="lastName"
               label="Last Name"
               type="text"
               required
               fullWidth
               value={userData.lastName}
-              onBlur={() => verifyInput(UserDataKeys.lastName)}
+              onBlur={() => validateInput('lastName')}
               onChange={(event) => setUserData({ ...userData, lastName: event.target.value })}
               error={!!error.lastName}
             />
@@ -161,12 +131,12 @@ export const Register = () => {
           </div>
           <div>
             <TextField
-              name={UserDataKeys.userName}
+              name="userName"
               label="User Name"
               type="text"
               required
               fullWidth
-              onBlur={() => verifyInput(UserDataKeys.userName)}
+              onBlur={() => validateInput('userName')}
               value={userData.userName}
               onChange={(event) => setUserData({ ...userData, userName: event.target.value })}
               error={!!error.userName}
@@ -175,12 +145,12 @@ export const Register = () => {
           </div>
           <div>
             <TextField
-              name={UserDataKeys.email}
+              name="email"
               label="E-Mail"
               type="email"
               required
               fullWidth
-              onBlur={() => verifyInput(UserDataKeys.email)}
+              onBlur={() => validateInput('email')}
               value={userData.email}
               onChange={(event) => setUserData({ ...userData, email: event.target.value })}
               error={!!error.email}
@@ -189,12 +159,15 @@ export const Register = () => {
           </div>
           <div>
             <TextField
-              name={UserDataKeys.password}
+              name="password"
               label="Enter Password"
               type="password"
               required
               fullWidth
-              onBlur={() => verifyInput(UserDataKeys.password)}
+              onBlur={() => {
+                validateInput('password');
+                if (userData.repeatPassword) validateInput('repeatPassword');
+              }}
               value={userData.password}
               onChange={(event) => setUserData({ ...userData, password: event.target.value })}
               error={!!error.password}
@@ -203,14 +176,14 @@ export const Register = () => {
           </div>
           <div>
             <TextField
-              name={UserDataKeys.repeatPassword}
+              name="repeatPassword"
               label="Repeat Password"
               type="password"
               required
               fullWidth
-              onBlur={() => verifyInput(UserDataKeys.repeatPassword)}
-              value={repeatPassword}
-              onChange={(event) => setRepeatPassword(event.target.value)}
+              onBlur={() => validateInput('repeatPassword')}
+              value={userData.repeatPassword}
+              onChange={(event) => setUserData({ ...userData, repeatPassword: event.target.value })}
               error={!!error.repeatPassword}
             />
             {error.repeatPassword && <ErrorMessage>{error.repeatPassword}</ErrorMessage>}

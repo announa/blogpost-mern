@@ -6,6 +6,13 @@ export const PostInformation = styled('p')({
   alignItems: 'center'
 })
 
+export const Title = styled('p')({
+  fontSize: '16px',
+  fontWeight: 500,
+  marginTop: '24px',
+  marginBottom: '4px',
+})
+
 export const Author = styled('p')({
   fontSize: '14px',
   margin: 0
@@ -19,9 +26,14 @@ export const Date = styled('p')({
 })
 
 export const Summary = styled('p')({
-  margin: '24px 0',
-  fontSize: '16px',
-  fontWeight: 600
+  margin: '18px 0',
+  fontSize: '14px',
+  fontWeight: 600,
+  display: '-webkit-box',
+  '-webkit-line-clamp': '4',
+  '-webkit-box-orient': 'vertical',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
 })
 
 export const Content = styled('p')({

@@ -39,9 +39,10 @@ const clipboardOptions = {
 export interface EditorProps {
   setPost: Dispatch<SetStateAction<PostToEdit>>;
   post: PostToEdit;
+  onBlur: () => void;
 }
 export const Editor = (props: EditorProps) => {
-  const { post, setPost } = props;
+  const { post, setPost, onBlur } = props;
   const [editorContent, setEditorContent] = useState<string | null>(null);
   const handleChange = (content: string) => {
     if (!editorContent) {
@@ -54,6 +55,7 @@ export const Editor = (props: EditorProps) => {
 
   return (
     <StyledEditor
+      onBlur={onBlur}
       theme="snow"
       value={post.content}
       onChange={handleChange}
