@@ -1,4 +1,3 @@
-import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import { Box, Grid2, styled } from '@mui/material';
 import { Link } from '../../../components/base/link/Link';
 import { Author, Date, Summary, Title } from '../../../components/post/post-content/PostContent';
@@ -21,23 +20,8 @@ export const Post = ({ post }: PostProps) => {
     <Grid2 key={post.id} size={{ xs: 12, md: 6, lg: 4 }}>
       <Link to={`${routes.post.baseRoute}/${post.id}`} hoverColor="black">
         <PostContainer padding="20px">
-          {post.image ? (
-            <PostImage
-              src={post.image?.data}
-              boxProps={{ borderRadius: 0 }}
-              imageProps={{ alt: post.title }}
-            />
-          ) : (
-            <Box
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              width="100%"
-              sx={{ aspectRatio: '1.2' }}
-            >
-              <ImageOutlinedIcon color="disabled" sx={{ fontSize: '80px' }} />
-            </Box>
-          )}
+          <PostImage src={post.image?.data} boxProps={{ borderRadius: 0, sx: {backgroundColor: '#f9f9f9'} }} imageProps={{ alt: post.title }} />
+
           <Box>
             <Title>{post.title}</Title>
             <Author>{post.author.userName}</Author>

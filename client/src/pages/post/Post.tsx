@@ -55,7 +55,7 @@ export const Post = () => {
 
   const handleDelete = async () => {
     try {
-      const accessToken = getAccessToken();
+      const accessToken = await getAccessToken();
       await axios.delete(`${import.meta.env.VITE_POSTS_URL}/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,

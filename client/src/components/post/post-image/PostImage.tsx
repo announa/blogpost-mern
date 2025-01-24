@@ -14,7 +14,8 @@ export interface PostImageProps {
   src?: string | null;
 }
 export const PostImage = (props: PostImageProps) => {
-  const { boxProps, imageProps, src } = props;
+  const { boxProps = {}, imageProps, src } = props;
+  const {sx, ...restBoxProps} = boxProps
   return (
     <Box
       borderRadius="4px"
@@ -22,10 +23,10 @@ export const PostImage = (props: PostImageProps) => {
       alignItems="center"
       justifyContent="center"
       width="100%"
-      sx={{ aspectRatio: '2' }}
+      sx={{ aspectRatio: '2', ...sx }}
       position="relative"
       overflow="hidden"
-      {...boxProps}
+      {...restBoxProps}
     >
       {src ? (
         <StyledImage {...imageProps} src={src} />
