@@ -15,7 +15,7 @@ export const getUser = async (req: Request, res: Response) => {
       throw new HTTPError('User not found', 404);
     }
     const { _id, password, ...userData } = user;
-    res.status(200).json(userData);
+    res.status(200).json({...userData, id: _id});
   } catch (error) {
     handleError(error, res);
   }

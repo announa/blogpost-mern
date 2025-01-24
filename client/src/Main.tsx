@@ -11,6 +11,7 @@ import { Login } from './pages/login/Login';
 import { Post } from './pages/post/Post';
 import { Posts } from './pages/posts/Posts';
 import { Register } from './pages/register/Register';
+import { LoadingOverlay } from './components/base/loading-overlay/LoadingOverlay';
 
 const MainContainer = styled('div')({
   height: '100vh',
@@ -52,26 +53,30 @@ export const Main = () => {
     <MainContainer>
       <PaperCard flex={1} cardProps={{ padding: '0 50px 70px' }}>
         <NavBar />
-        <Routes>
-          <Route
-            path={routes.addPost.route}
-            element={userContext?.user ? <EditPost /> : <Navigate to={routes.posts.route} replace />}
-          />
-          <Route path={routes.posts.route} element={<Posts />} />
-          <Route path={routes.post.route} element={<Post />} />
-          <Route
-            path={routes.updatePost.route}
-            element={userContext?.user ? <EditPost /> : <Navigate to={routes.posts.route} replace />}
-          />
-          <Route
-            path={routes.login.route}
-            element={!userContext?.user ? <Login /> : <Navigate to={routes.posts.route} replace />}
-          />
-          <Route
-            path={routes.register.route}
-            element={!userContext?.user ? <Register /> : <Navigate to={routes.posts.route} replace />}
-          />
-        </Routes>
+        {userContext?.loading ? (
+          <LoadingOverlay open={true} />
+        ) : (
+          <Routes>
+            <Route
+              path={routes.addPost.route || routes.updatePost.baseRoute}
+              element={userContext?.user ? <EditPost /> : <Navigate to={routes.posts.route} replace />}
+            />
+            <Route path={routes.posts.route} element={<Posts />} />
+            <Route path={routes.post.route} element={<Post />} />
+            <Route
+              path={routes.updatePost.route}
+              element={userContext?.user ? <EditPost /> : <Navigate to={routes.posts.route} replace />}
+            />
+            <Route
+              path={routes.login.route}
+              element={!userContext?.user ? <Login /> : <Navigate to={routes.posts.route} replace />}
+            />
+            <Route
+              path={routes.register.route}
+              element={!userContext?.user ? <Register /> : <Navigate to={routes.posts.route} replace />}
+            />
+          </Routes>
+        )}
       </PaperCard>
     </MainContainer>
   );

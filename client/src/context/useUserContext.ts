@@ -1,6 +1,7 @@
 import { createContext, Dispatch, SetStateAction, useContext } from 'react';
 
 export type User = {
+  id: string;
   firstName: string;
   lastName: string;
   userName: string;
@@ -12,6 +13,7 @@ export interface IUserContext {
   setUser: Dispatch<SetStateAction<User | null>>;
   refreshTokenExpiration: number | null;
   setRefreshTokenExpiration: Dispatch<SetStateAction<number | null>>;
+  loading: boolean;
 }
 
 export const UserContext = createContext<IUserContext | null>(null);

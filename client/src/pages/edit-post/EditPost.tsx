@@ -19,6 +19,7 @@ import { useToken } from '../../hooks/useToken';
 import { Post } from '../../types/types';
 import { handleError } from '../../utils/errorHandling';
 import { Loading } from '../loading/Loading';
+import { useUserContext } from '../../context/useUserContext';
 
 const StyledForm = styled('form')(({ theme }) => ({
   display: 'flex',
@@ -68,8 +69,10 @@ export const EditPost = () => {
   const { enqueueSnackbar } = useSnackbar();
   const { pathname } = useLocation();
   const { id } = useParams();
+  const userContext = useUserContext();
   const { getAccessToken } = useToken();
   const [currentPost, setCurrentPost] = useState<PostToEdit | null>(null);
+  const [author, setAuthor] = useState<string | null>(null);
   const [postToUpload, setPostToUpload] = useState(initialPost);
   const [newImage, setNewImage] = useState<File | null | undefined>(undefined);
   const [currentImage, setCurrentImage] = useState<string | null>(null);
@@ -80,6 +83,11 @@ export const EditPost = () => {
     errorMessages,
     inputParser: postInputParser,
   });
+
+  const userIsAuthor = useMemo(
+    () => !editMode || (editMode && userContext?.user?.id === author),
+    [userContext?.user, author, editMode]
+  );
 
   const shouldUploadImage = useMemo(
     () => (!editMode && newImage) || (editMode && newImage !== undefined),
@@ -115,23 +123,32 @@ export const EditPost = () => {
   }, [loading, editMode, isSubmitDisabled]);
 
   useEffect(() => {
-    setEditMode(!!id);
-    if (pathname !== routes.addPost.route && !id) {
-      navigate(routes.addPost.route);
-      enqueueSnackbar('Post not found', { variant: 'error', autoHideDuration: 3000 });
+    let snackbarMessage = 'Post not found';
+    if (!id || !userIsAuthor) {
+      setEditMode(false);
+      if (pathname !== routes.addPost.route) {
+        navigate(routes.addPost.route);
+      }
     }
-  }, [pathname, id]);
+    if (!userIsAuthor) {
+      snackbarMessage = 'Unauthorized';
+    }
+    enqueueSnackbar(snackbarMessage, { variant: 'error', autoHideDuration: 3000 });
+  }, [id, userIsAuthor]);
 
   useEffect(() => {
+    console.log('setPostToUpload, currentPost: ', currentPost);
     setPostToUpload(currentPost ?? initialPost);
   }, [currentPost]);
 
   const clearState = () => {
+    console.log('clear state');
     setCurrentPost(null);
     setCurrentImage(null);
   };
 
   const getPost = async () => {
+    console.log('get post');
     try {
       const post = await axios.get<Post>(`${import.meta.env.VITE_POSTS_URL}/${id}`);
       return post.data;
@@ -140,20 +157,27 @@ export const EditPost = () => {
     }
   };
 
+  // useEffect(() => {
+  //   if(pathname === routes.addPost.route){
+  //     setEditMode(false)
+  //   }
+  // }, [pathname])
+
   useEffect(() => {
     if (editMode) {
       setLoading(true);
       getPost().then((data) => {
         if (data) {
-        const {image, ...postData} = data
+          const { image, author, ...postData } = data;
           setCurrentPost(postData);
+          setAuthor(author.id);
           if (image) {
             setCurrentImage(image.data);
           }
         }
         setLoading(false);
       });
-    } else if (currentPost) {
+    } else {
       clearState();
     }
   }, [editMode]);
@@ -287,7 +311,11 @@ export const EditPost = () => {
           {error.summary && <ErrorMessage>{error.summary}</ErrorMessage>}
         </div>
         <div>
-          <Editor onBlur={() => validateInput('content')} content={postToUpload.content} setPost={setPostToUpload} />
+          <Editor
+            onBlur={() => validateInput('content')}
+            content={postToUpload.content}
+            setPost={setPostToUpload}
+          />
           {error.content && <ErrorMessage>{error.content}</ErrorMessage>}
         </div>
         <input type="file" onChange={uploadImage} />

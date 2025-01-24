@@ -3,7 +3,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { Box, IconButton, Tooltip, useTheme } from '@mui/material';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import sanitize from 'sanitize-html';
 import { PageContainer } from '../../components/page/page-container/PageContainer';
@@ -35,6 +35,12 @@ export const Post = () => {
   const [post, setPost] = useState<IPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [noDataError, setNoDataError] = useState(false);
+
+  const userIsAuthor = useMemo(
+    () => userContext?.user?.id === post?.author.id,
+    [userContext?.user, post?.author]
+  );
+
   const getPost = async () => {
     try {
       const post = await axios.get<IPost>(`${import.meta.env.VITE_POSTS_URL}/${id}`);
@@ -99,6 +105,7 @@ export const Post = () => {
     <PageContainer>
       <Box
         flex={1}
+        width="100%"
         maxWidth="700px"
         sx={{
           [theme.breakpoints.up('md')]: {
@@ -108,7 +115,7 @@ export const Post = () => {
       >
         <PageHeader
           title={post?.title ?? 'Post not found'}
-          customElement={userContext?.user ? EditButtons : undefined}
+          customElement={userContext?.user && userIsAuthor ? EditButtons : undefined}
         />
         <Box marginBottom="24px">
           <PostImage

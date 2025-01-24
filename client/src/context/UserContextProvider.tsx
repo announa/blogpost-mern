@@ -10,6 +10,7 @@ export const UserContextProvider = ({ children }: { children: ReactNode }) => {
   const { enqueueSnackbar } = useSnackbar();
   const { getAccessToken, getStorageItem } = useToken();
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const [refreshTokenExpiration, setRefreshTokenExpiration] = useState<number | null>(null);
 
   const getUserData = async () => {
@@ -33,13 +34,16 @@ export const UserContextProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       handleError(error, enqueueSnackbar);
     }
+    setLoading(false);
   };
   useEffect(() => {
     getUserData();
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, setUser, refreshTokenExpiration, setRefreshTokenExpiration }}>
+    <UserContext.Provider
+      value={{ user, setUser, refreshTokenExpiration, setRefreshTokenExpiration, loading }}
+    >
       <Box>{children}</Box>
     </UserContext.Provider>
   );

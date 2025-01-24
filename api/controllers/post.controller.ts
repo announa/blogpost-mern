@@ -27,13 +27,13 @@ const getLogResult = (data: PostWithImageAndAuthor) =>
 
 const mapPost = (post: PostWithImageAndAuthor) => {
   const image = post?.image?.file?.toString('base64');
-  const {_id: authorId, userName} = post.author
+  const { _id: authorId, userName } = post.author;
   const { _id, ...postCopy } = post;
   if (!post.image) {
     return {
       ...postCopy,
       id: _id,
-      author: {userName, id: authorId},
+      author: { userName, id: authorId },
       image: null,
     };
   } else {
@@ -41,7 +41,7 @@ const mapPost = (post: PostWithImageAndAuthor) => {
     return {
       ...postCopy,
       id: _id,
-      author: {userName, id: authorId},
+      author: { userName, id: authorId },
       image: {
         ...imageCopy,
         id: imageId,
@@ -61,7 +61,6 @@ export const getPosts = async (req: Request, res: Response) => {
       ])) as unknown as PostWithImageAndAuthor[];
     console.log('posts result: ', posts);
     const mappedPosts = posts.map((post) => mapPost(post));
-    console.log(`Posts loaded: ${JSON.stringify(mappedPosts, null, 4)}`);
     res.status(200).json(mappedPosts);
   } catch (error) {
     const mongooseError = error as MongooseError;
@@ -147,9 +146,29 @@ const updateImage = async (id: ObjectId, file: Express.Multer.File) => {
   return updatedImage;
 };
 
-// const updatePostImage = (imageId: ObjectId | null, data.image, imageUpdateFile) => {
-
-// }
+const updatePostImage = async (
+  imageId: ObjectId | null | undefined,
+  postImageData: ObjectId | 'null' | null | undefined,
+  imageFile?: Express.Multer.File
+) => {
+  let createdImageId = null;
+  if (postImageData && postImageData === 'null') {
+    postImageData = null;
+  }
+  if (imageId && imageFile) {
+    await updateImage(imageId, imageFile);
+  }
+  if (!imageId && imageFile) {
+    createdImageId = (await createImage(imageFile))._id;
+  }
+  if (imageId && postImageData === null) {
+    await deleteImage(imageId);
+  }
+  if (createdImageId) {
+    postImageData = createdImageId;
+  }
+  return postImageData;
+};
 
 const deleteImage = async (id: ObjectId) => {
   console.log('Deleting image');
@@ -159,36 +178,17 @@ const deleteImage = async (id: ObjectId) => {
 };
 
 export const updatePost = async (req: Request, res: Response) => {
-  const data = req.body as IUpdatePostData;
+  const postData = req.body as IUpdatePostData;
   const { id } = req.params;
   const imageUpdateFile = req.file;
-  console.log(`Data to update: ${JSON.stringify(data, null, 4)}`);
-  console.log(`Image to update: ${JSON.stringify(imageUpdateFile, null, 4)}`);
   try {
-    const currentPost = await Post.findOne({_id: id, author: req.userId});
+    const currentPost = await Post.findOne({ _id: id, author: req.userId });
     if (!currentPost) {
-      throw new HTTPError(`Post with id ${id} could not be found and updated`, 404);
+      throw new HTTPError(`Post with id ${id} could not be found for this user`, 404);
     }
-    // const {} = updatePostImage(currentPost.image?._id, data.image, imageUpdateFile)
-    const currentImageId = currentPost?.image?._id;
-    let createdImageId = null;
-    console.log('currentPost: ', currentPost);
-    if (data.image && data.image === 'null') {
-      data.image = null;
-    }
-    if (currentImageId && imageUpdateFile) {
-      await updateImage(currentImageId, imageUpdateFile);
-    }
-    if (!currentImageId && imageUpdateFile) {
-      createdImageId = (await createImage(imageUpdateFile))._id;
-    }
-    if (currentImageId && data.image === null) {
-      await deleteImage(currentImageId);
-    }
-    if (createdImageId) {
-      data.image = createdImageId;
-    }
-    const post = await updatePostData(id as unknown as ObjectId, data, req.userId);
+    const postImageData = await updatePostImage(currentPost.image?._id, postData.image, imageUpdateFile);
+    postData.image = postImageData;
+    const post = await updatePostData(id as unknown as ObjectId, postData, req.userId);
     res.status(200).json(post);
   } catch (error) {
     if (error instanceof MongooseError && error.message.includes('Cast to ObjectId failed for value')) {
