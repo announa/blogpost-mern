@@ -40,7 +40,7 @@ export const Post = ({ post }: PostProps) => {
           )}
           <Box>
             <Title>{post.title}</Title>
-            <Author>{post.author}</Author>
+            <Author>{post.author.userName}</Author>
             <Date>{formatDate(post.createdAt)}</Date>
             <Summary>{post.summary}</Summary>
           </Box>

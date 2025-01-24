@@ -38,18 +38,18 @@ const clipboardOptions = {
 
 export interface EditorProps {
   setPost: Dispatch<SetStateAction<PostToEdit>>;
-  post: PostToEdit;
+  content: string;
   onBlur: () => void;
 }
 export const Editor = (props: EditorProps) => {
-  const { post, setPost, onBlur } = props;
+  const { content, setPost, onBlur } = props;
   const [editorContent, setEditorContent] = useState<string | null>(null);
-  const handleChange = (content: string) => {
+  const handleChange = (newContent: string) => {
     if (!editorContent) {
-      setEditorContent(post.content);
-      setPost({ ...post, content: content });
+      setEditorContent(content);
+      setPost(prev => ({ ...prev, content: newContent }));
     } else {
-      setPost({ ...post, content: content });
+      setPost(prev => ({ ...prev, content: newContent }));
     }
   };
 
@@ -57,7 +57,7 @@ export const Editor = (props: EditorProps) => {
     <StyledEditor
       onBlur={onBlur}
       theme="snow"
-      value={post.content}
+      value={content}
       onChange={handleChange}
       modules={{ toolbar: toolbarOptions, clipboard: clipboardOptions }}
     />

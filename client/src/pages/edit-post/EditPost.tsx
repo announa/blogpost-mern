@@ -38,21 +38,18 @@ const DeleteImageButton = styled(IconButton)({
 
 const initialPost = {
   title: '',
-  author: '',
   summary: '',
   content: '',
 };
 
 const errorMessages = {
   title: 'Title is required',
-  author: 'Author is required',
   summary: 'Summary is required',
   content: 'Content is required',
 };
 
 const postInputParser = z.object({
   title: z.string().nonempty({ message: errorMessages.title }),
-  author: z.string().nonempty({ message: errorMessages.author }),
   summary: z.string().nonempty({ message: errorMessages.summary }),
   content: z
     .string()
@@ -104,7 +101,7 @@ export const EditPost = () => {
     } else {
       return !validatedInput.success;
     }
-  }, [currentPost, postToUpload, shouldUploadImage]);
+  }, [postToUpload, shouldUploadImage]);
 
   const pageTitle = useMemo(() => {
     const title = editMode ? 'Edit Article' : 'Write an Article';
@@ -148,15 +145,11 @@ export const EditPost = () => {
       setLoading(true);
       getPost().then((data) => {
         if (data) {
-          setCurrentPost({
-            title: data.title,
-            author: data.author,
-            summary: data.summary,
-            content: data.content,
-          });
-        }
-        if (data?.image) {
-          setCurrentImage(data.image.data);
+        const {image, ...postData} = data
+          setCurrentPost(postData);
+          if (image) {
+            setCurrentImage(image.data);
+          }
         }
         setLoading(false);
       });
@@ -280,20 +273,6 @@ export const EditPost = () => {
         </div>
         <div>
           <TextField
-            name="author"
-            label="Author"
-            value={postToUpload.author}
-            type="text"
-            required
-            fullWidth
-            onBlur={() => validateInput('author')}
-            onChange={(event) => setPostToUpload({ ...postToUpload, author: event.target.value })}
-            sx={{ '.MuiInputBase-root': { backgroundColor: 'white' } }}
-          />
-          {error.author && <ErrorMessage>{error.author}</ErrorMessage>}
-        </div>
-        <div>
-          <TextField
             label="Summary"
             multiline
             maxRows={3}
@@ -308,7 +287,7 @@ export const EditPost = () => {
           {error.summary && <ErrorMessage>{error.summary}</ErrorMessage>}
         </div>
         <div>
-          <Editor onBlur={() => validateInput('content')} post={postToUpload} setPost={setPostToUpload} />
+          <Editor onBlur={() => validateInput('content')} content={postToUpload.content} setPost={setPostToUpload} />
           {error.content && <ErrorMessage>{error.content}</ErrorMessage>}
         </div>
         <input type="file" onChange={uploadImage} />

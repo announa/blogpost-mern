@@ -1,7 +1,12 @@
+export type Author = {
+  id: string;
+  userName: string;
+};
+
 export type Post = {
   id: string;
   title: string;
-  author: string;
+  author: Author;
   summary: string;
   content: string;
   createdAt: string;

@@ -56,9 +56,7 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction) => 
     }
     console.log(token);
     const verified = verifyJwt(token, publicKey);
-    if (req.originalUrl === '/api/user' || req.originalUrl === '/auth/logout') {
-      req.userId = verified.sub ?? '';
-    }
+    req.userId = verified.sub ?? '';
     next();
   } catch (error) {
     handleError(error, res);

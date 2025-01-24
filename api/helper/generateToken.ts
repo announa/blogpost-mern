@@ -24,7 +24,7 @@ export const generateRefreshToken = (userId: ObjectId | string) => {
 export const generateAccessToken = (userId: ObjectId | string) => {
   console.log('generating access token');
   const signOptions: SignOptions = {
-    expiresIn: '30s',
+    expiresIn: '15min',
     algorithm: 'RS256',
     subject: userId.toString(),
     issuer: process.env.TOKEN_ISS,
@@ -36,6 +36,6 @@ export const generateAccessToken = (userId: ObjectId | string) => {
     throw new HTTPError('Internal server error', 500);
   }
   const token = jwt.sign({}, secret, signOptions);
-  const expiration = add(new Date(), { seconds: 30 }).getTime();
+  const expiration = add(new Date(), { minutes: 15 }).getTime();
   return { token: token, expiration: expiration };
 };

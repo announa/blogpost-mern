@@ -119,7 +119,7 @@ export const Post = () => {
         </Box>
         <Box flex="1">
           <PostInformation>
-            <Author>{post?.author}</Author>
+            <Author>{post?.author.userName}</Author>
             <Date>{formatDate(post?.createdAt)}</Date>{' '}
           </PostInformation>
           <Summary>{post?.summary}</Summary>

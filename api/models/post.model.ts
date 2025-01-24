@@ -11,8 +11,9 @@ const PostSchema = new Schema(
       required: [true, 'Please enter a post summary'],
     },
     author: {
-      type: String,
-      required: [true, 'Please enter an author'],
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
     },
     content: {
       type: String,
