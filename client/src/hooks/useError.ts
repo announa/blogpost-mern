@@ -2,18 +2,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { z, ZodRawShape } from 'zod';
 import { handleZodSafeParseError } from '../utils/errorHandling';
 
-export interface UseErrorProps<T extends Record<string, string>, U extends ZodRawShape> {
+export interface UseErrorProps<U extends ZodRawShape> {
   data: z.infer<z.ZodObject<U>>;
-  errorMessages: T;
+  errorMessages: z.infer<z.ZodObject<U>>;
   inputParser: z.ZodEffects<z.ZodObject<U>> | z.ZodObject<U>;
 }
 
-export const useError = <T extends Record<string, string>, U extends ZodRawShape>({
-  data,
-  errorMessages,
-  inputParser,
-}: UseErrorProps<T, U>) => {
-  const initialError = useMemo(() => {
+export const useError = <U extends ZodRawShape>({ data, errorMessages, inputParser }: UseErrorProps<U>) => {
+  type ErrorMessages = typeof errorMessages;
+
+  const initialError: ErrorMessages = useMemo(() => {
     const errors = Object.entries(errorMessages);
     const emptyErrors = errors.map((error) => [error[0], '']);
     const initialMessages = Object.fromEntries(emptyErrors);
@@ -32,7 +30,7 @@ export const useError = <T extends Record<string, string>, U extends ZodRawShape
     setError(newError);
   }, [validatedInput]);
 
-  const validateInput = (field: keyof T) => {
+  const validateInput = (field: keyof ErrorMessages) => {
     const hasError = validatedInput.error?.issues.find((issue) => issue.path[0] === field);
     if (hasError) {
       setError({ ...error, [field]: errorMessages[field] });
@@ -43,6 +41,6 @@ export const useError = <T extends Record<string, string>, U extends ZodRawShape
     setError,
     initialError,
     validateInput,
-    validatedInput
+    validatedInput,
   };
 };

@@ -1,17 +1,18 @@
 import { styled } from '@mui/material';
 import { useEffect, useRef } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { LoadingOverlay } from './components/base/loading-overlay/LoadingOverlay';
 import { PaperCard } from './components/base/paper-card/PaperCard';
 import { NavBar } from './components/nav/NavBar';
 import { routes } from './config/navigation/navigation';
 import { useUserContext } from './context/useUserContext';
 import { useToken } from './hooks/useToken';
-import { EditPost } from './pages/edit-post/EditPost';
 import { Login } from './pages/login/Login';
 import { Post } from './pages/post/Post';
 import { Posts } from './pages/posts/Posts';
 import { Register } from './pages/register/Register';
-import { LoadingOverlay } from './components/base/loading-overlay/LoadingOverlay';
+import { UpdatePost } from './pages/edit-post/update-post/UpdatePost';
+import { AddPost } from './pages/edit-post/add-post/AddPost';
 
 const MainContainer = styled('div')({
   height: '100vh',
@@ -58,14 +59,18 @@ export const Main = () => {
         ) : (
           <Routes>
             <Route
-              path={routes.addPost.route || routes.updatePost.baseRoute}
-              element={userContext?.user ? <EditPost /> : <Navigate to={routes.posts.route} replace />}
+              path={routes.addPost.route}
+              element={userContext?.user ? <AddPost /> : <Navigate to={routes.posts.route} replace />}
+            />
+            <Route
+              path={routes.updatePost.baseRoute}
+              element={<Navigate to={routes.addPost.route} replace />}
             />
             <Route path={routes.posts.route} element={<Posts />} />
             <Route path={routes.post.route} element={<Post />} />
             <Route
               path={routes.updatePost.route}
-              element={userContext?.user ? <EditPost /> : <Navigate to={routes.posts.route} replace />}
+              element={userContext?.user ? <UpdatePost /> : <Navigate to={routes.posts.route} replace />}
             />
             <Route
               path={routes.login.route}
