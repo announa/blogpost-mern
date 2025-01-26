@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-const DATE_FORMAT = 'ee/MM/yyyy, kk:mm';
+const DATE_FORMAT = 'dd/MM/yyyy, kk:mm';
 
 export const formatDate = (date?: string | Date | number) => {
   if(!date){

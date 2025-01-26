@@ -54,12 +54,19 @@ const mapPost = (post: PostWithImageAndAuthor) => {
 export const getPosts = async (req: Request, res: Response) => {
   try {
     const posts = (await Post.find({})
+      .sort({ createdAt: -1 })
       .lean()
       .populate([
         'image',
         { path: 'author', select: '_id, userName' },
       ])) as unknown as PostWithImageAndAuthor[];
-    console.log('posts result: ', posts);
+    console.log(
+      'posts result: ',
+      posts.map((post) => {
+        const { image, ...rest } = post;
+        return rest;
+      })
+    );
     const mappedPosts = posts.map((post) => mapPost(post));
     res.status(200).json(mappedPosts);
   } catch (error) {

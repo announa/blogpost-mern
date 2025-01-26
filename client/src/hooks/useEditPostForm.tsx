@@ -79,8 +79,9 @@ export const useEditPostForm = () => {
         enqueueSnackbar('Unauthorized', { variant: 'error' });
         navigate(routes.login.route, { state: { lastVisited: window.location.href } });
       } else {
-        const slug = id ? `/${id}` : '';
-        const result = await axios.put(import.meta.env.VITE_POSTS_URL + slug, formData, {
+        const url =import.meta.env.VITE_POSTS_URL + ( id ? `/${id}` : '');
+        const fetchMethod = id ? axios.put : axios.post
+        const result = await fetchMethod(url, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
             Authorization: `Bearer ${accessToken}`,
