@@ -2,9 +2,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 import mongoose, { MongooseError } from 'mongoose';
+import authRoutes from './routes/auth.route';
 import postsRoutes from './routes/posts.route';
 import userRoutes from './routes/user.route';
-import authRoutes from './routes/auth.route';
 
 dotenv.config();
 

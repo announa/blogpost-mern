@@ -60,13 +60,6 @@ export const getPosts = async (req: Request, res: Response) => {
         'image',
         { path: 'author', select: '_id, userName' },
       ])) as unknown as PostWithImageAndAuthor[];
-    console.log(
-      'posts result: ',
-      posts.map((post) => {
-        const { image, ...rest } = post;
-        return rest;
-      })
-    );
     const mappedPosts = posts.map((post) => mapPost(post));
     res.status(200).json(mappedPosts);
   } catch (error) {
@@ -79,16 +72,13 @@ export const getPosts = async (req: Request, res: Response) => {
 export const getPost = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    console.log(`Requested post: ${id}`);
     const post = (await Post.findById(id)
       .lean()
       .populate(['image', { path: 'author', select: '_id, userName' }])) as unknown as PostWithImageAndAuthor;
-    console.log('post result: ', post);
     if (!post) {
       console.error(`Post with id ${id} could not be found`);
       res.status(404).json({ message: `Post with id ${id} could not be found` });
     } else {
-      console.log(`Post loaded: ${getLogResult(post)}`);
       const mappedPost = mapPost(post);
       res.status(200).json(mappedPost);
     }
@@ -102,10 +92,8 @@ export const getPost = async (req: Request, res: Response) => {
 
 const createImage = async (image: Express.Multer.File) => {
   const fileName = image.originalname;
-  console.log(fileName);
   const extension = fileName.split('.').pop();
   const contentType = image.mimetype;
-  console.log('contentType', contentType);
   const createdImage = await Image.create({
     name: `${uuid4()}.${extension}`,
     contentType,
@@ -116,7 +104,6 @@ const createImage = async (image: Express.Multer.File) => {
 };
 
 export const createPost = async (req: Request, res: Response) => {
-  console.log(`Post to add: ${JSON.stringify(req.body)}`);
   try {
     const userId = req.userId;
     let imageId = null;
@@ -144,7 +131,6 @@ const updatePostData = async (id: ObjectId, data: IUpdatePostData, userId: strin
 };
 
 const updateImage = async (id: ObjectId, file: Express.Multer.File) => {
-  console.log('Updating image');
   const updatedImage = await Image.findByIdAndUpdate(id, file, { new: true });
   console.log('updated image: ', updatedImage);
   if (!updatedImage) {
@@ -178,7 +164,6 @@ const updatePostImage = async (
 };
 
 const deleteImage = async (id: ObjectId) => {
-  console.log('Deleting image');
   const deletedImage = await Post.findByIdAndDelete(id);
   console.log('deleted image: ', deletedImage);
   return deletedImage;

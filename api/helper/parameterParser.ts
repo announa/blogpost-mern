@@ -18,3 +18,22 @@ export const registerInputParser = z.object({
     .nonempty({ message: 'Password is required' })
     .refine((password) => PASSWORD_REGEX.test(password), 'Invalid password'),
 });
+
+export const passwordParser = z
+  .string()
+  .nonempty({ message: 'Password is required' })
+  .refine((password) => PASSWORD_REGEX.test(password), 'Invalid password');
+
+export const updateUserInputParser = z.object({
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  userName: z.string().optional(),
+  email: z
+    .string()
+    .optional()
+    .refine((value) => !value || validator.isEmail(value), { message: 'A valid email is required' }),
+  password: z
+    .string()
+    .optional()
+    .refine((password) => !password || PASSWORD_REGEX.test(password), 'Invalid password'),
+});

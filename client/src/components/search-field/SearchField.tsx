@@ -1,17 +1,18 @@
 import SearchIcon from '@mui/icons-material/Search';
-import { OutlinedInput, OutlinedInputProps } from '@mui/material';
+import { TextField, TextFieldProps } from '@mui/material';
 import { ChangeEvent, Dispatch, SetStateAction, useRef } from 'react';
 
-export interface SearchFieldProps<T extends Record<string, string>> extends OutlinedInputProps {
+export interface SearchFieldProps<T extends Record<string, string>> extends TextFieldProps<'outlined'> {
   search: T;
   setSearch: Dispatch<SetStateAction<T>>;
 }
 export const SearchField = <T extends Record<string, string>>({
   search,
   setSearch,
-  ...inputProps
+  ...textFieldProps
 }: SearchFieldProps<T>) => {
-  const name = inputProps.name as keyof T;
+  const inputRef = useRef<HTMLInputElement>(null);
+  const name = textFieldProps.name as keyof T;
   const timeout = useRef<number | null>(null);
 
   const debounceOnChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -22,10 +23,20 @@ export const SearchField = <T extends Record<string, string>>({
   };
 
   return (
-    <OutlinedInput
+    <TextField
+      inputRef={inputRef}
+      variant={textFieldProps.variant}
       onChange={debounceOnChange}
-      placeholder={inputProps.placeholder}
-      endAdornment={<SearchIcon />}
+      placeholder={textFieldProps.placeholder}
+      slotProps={{
+        input: {
+          endAdornment: <SearchIcon />,
+          sx: { fontSize: '14px' },
+        },
+      }}
+      hidden
+      size="small"
+      sx={{ flex: 1 }}
     />
   );
 };

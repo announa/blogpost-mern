@@ -3,7 +3,7 @@ import { model, Schema } from 'mongoose';
 const RefreshTokenModel = new Schema({
   user: {
     type: Schema.Types.ObjectId,
-    ref: 'Image',
+    ref: 'User',
     required: true,
   },
   token: {

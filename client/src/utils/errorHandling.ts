@@ -31,3 +31,7 @@ export const handleError = (error: unknown, enqueueSnackbar: EnqueueSnackbar, cu
   console.error(errorMessage);
   enqueueSnackbar(customMessage ?? errorMessage, { variant: 'error', autoHideDuration: 3000 });
 };
+
+export const errorHasText = (error: unknown, text: string[]) =>
+  error instanceof AxiosError &&
+  text.some((t) => (error.response?.data as { error: { message: string } }).error.message.includes(t));

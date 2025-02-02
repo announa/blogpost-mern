@@ -1,17 +1,35 @@
-import { Box, Typography, TypographyProps } from '@mui/material';
+import { Box, BoxProps, styled, Typography, TypographyProps } from '@mui/material';
 
-export interface PageHeaderProps extends TypographyProps {
+const StyledBox = styled(Box)<{fullWidth: boolean}>(({ theme, fullWidth }) => ({
+  top: '130px',
+  right: 0,
+  [theme.breakpoints.up('md')]: {
+    width: fullWidth ? '100%' : '75%',
+  },
+}));
+
+export interface PageHeaderProps extends BoxProps {
   title: string;
-  customElement?: JSX.Element
+  customElement?: JSX.Element;
+  fullWidth?: boolean;
+  typographyProps?: TypographyProps;
 }
 
-export const PageHeader = ({ title, customElement, ...props }: PageHeaderProps) => {
+export const PageHeader = ({ title, customElement, fullWidth=false, typographyProps, ...props }: PageHeaderProps) => {
   return (
-    <Box marginBottom="40px" width='100%' display='flex' justifyContent='space-between' alignItems='center'>
-    <Typography component="h1" variant="h5"  {...props}>
-      {title}
-    </Typography>
-    {customElement}
-    </Box>
+    <StyledBox
+      marginBottom="40px"
+      width="100%"
+      display="flex"
+      justifyContent="space-between"
+      alignItems="center"
+      fullWidth={fullWidth}
+      {...props}
+    >
+      <Typography component="h1" variant="h5" {...typographyProps}>
+        {title}
+      </Typography>
+      {customElement}
+    </StyledBox>
   );
 };

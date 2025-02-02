@@ -1,88 +1,51 @@
 import bcrypt from 'bcrypt';
 import { ObjectId } from 'bson';
 import { Request, Response } from 'express';
-import { Model, MongooseError } from 'mongoose';
+import mongoose, { Model, MongooseError } from 'mongoose';
 import { HTTPError } from '../class/HTTPError';
 import { handleError } from '../helper/errorHandling';
-import { generateAccessToken, generateRefreshToken } from '../helper/generateToken';
-import { hashPassword } from '../helper/hasPassword';
-import { loginInputParser, registerInputParser } from '../helper/parameterParser';
-import { verifyRefreshToken } from '../helper/verifyRefreshToken';
-import { RefreshToken } from '../models/refreshToken.model';
+import { loginInputParser, passwordParser, registerInputParser } from '../helper/parameterParser';
+import { generateAccessToken, generateRefreshToken } from '../helper/token/generateToken';
+import { verifyRefreshToken, verifyResetPasswordToken } from '../helper/token/verifyToken';
+import { RefreshToken as Token } from '../models/refreshToken.model';
 import { User } from '../models/user.model';
+import { getUserFromDb } from '../helper/token/getFromDb/getFromDb';
+import crypto from 'crypto';
+import { storeRefreshToken, storeResetToken } from '../helper/token/storeToken';
+import { sendEmail } from '../helper/email/sendEmail';
+import { generateResetEmailContent } from '../helper/email/generateResetEmailContent';
+import { ResetToken } from '../models/resetToken.model';
 
-type UnwrapModel<T> = T extends Model<infer U> ? U : never;
-type IUser = UnwrapModel<typeof User> & { _id: ObjectId };
+export type UnwrapModel<T> = T extends Model<infer U> ? U : never;
+export type IUser = UnwrapModel<typeof User> & { _id: ObjectId };
 
-type GetUserIdInput = {
+export type GetUserIdInput = {
   email: string;
   password: string;
 };
 
-const getUserFromDb = async ({ email, password }: GetUserIdInput) => {
-  console.log('Retrieving user from DB');
-  let user: IUser | null = null;
-  const result = await User.find({ email: email }).lean();
-  if (result.length === 0) {
-    throw new MongooseError('Incorrect login data');
-  } else if (result.length > 1) {
-    throw new MongooseError('More than one user found for the provided login data');
-  }
-  user = result[0];
-  console.log('Found user in DB');
-  const { password: dbUserPassword, _id, ...userData } = user;
-  try {
-    const passwordMatches = await bcrypt.compare(password, dbUserPassword);
-    if (!passwordMatches) {
-      throw new MongooseError('Incorrect login data');
-    }
-    return { ...userData, id: _id };
-  } catch (error) {
-    console.error(error);
-    throw new MongooseError('Incorrect login data');
-  }
-};
-
-const storeRefreshToken = async (refreshToken: string, userId: ObjectId) => {
-  console.log('storing refresh token: ', refreshToken);
-  console.log('user: ', userId);
-  const existingToken = await RefreshToken.findOne({ user: userId });
-  console.log('existingToken: ', existingToken);
-  if (existingToken) {
-    const updatedToken = await RefreshToken.findByIdAndUpdate(
-      existingToken._id,
-      { $push: { token: refreshToken } },
-      { new: true }
-    );
-    console.log(updatedToken);
-  } else {
-    const newToken = await RefreshToken.create({ user: userId, token: [refreshToken] });
-  }
-};
-
 export const login = async (req: Request, res: Response) => {
-  console.log('logging user in');
+  console.log('---------------- Login -----------------');
   try {
     const loginInformation = loginInputParser.parse(req.body);
     const user = await getUserFromDb(loginInformation);
     const accessToken = generateAccessToken(user.id);
     const refreshToken = generateRefreshToken(user.id);
-    const refreshTokenDbEntry = await storeRefreshToken(refreshToken.token, user.id);
-    console.log(refreshTokenDbEntry);
     if (!accessToken || !refreshToken) {
       throw new HTTPError('Internal server error', 500);
-    } else {
-      res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken, data: user });
     }
+    await storeRefreshToken(refreshToken.token, user.id);
+    res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken, data: user });
   } catch (error) {
     handleError(error, res);
   }
 };
 
 export const logout = async (req: Request, res: Response) => {
+  console.log('---------------- Logout -----------------');
   try {
     const userId = req.userId;
-    const response = await RefreshToken.findOneAndDelete({ user: userId }).lean();
+    const response = await Token.findOneAndDelete({ user: userId }).lean();
     console.log(response);
     res.status(200).send('Successfully logged out');
   } catch (error) {
@@ -91,9 +54,10 @@ export const logout = async (req: Request, res: Response) => {
 };
 
 export const register = async (req: Request, res: Response) => {
+  console.log('---------------- Registration -----------------');
   try {
     const signUpInformation = registerInputParser.parse(req.body);
-    const hashedPassword = await hashPassword(signUpInformation.password);
+    const hashedPassword = await bcrypt.hash(signUpInformation.password, 10);
     const newUser = await User.create({ ...signUpInformation, password: hashedPassword });
     if (!newUser) {
       throw new HTTPError('Could not create new user', 500);
@@ -104,10 +68,64 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
+export const requestResetPassword = async (req: Request, res: Response) => {
+  console.log('----------------- Sending reset password email ----------------');
+  try {
+    const email = req.body.email;
+    if (!email) {
+      throw new HTTPError('No email provided', 400);
+    }
+    const user = await User.findOne({ email: email }, '_id, email');
+    if (!user) {
+      console.error(`No user found for the email ${email}`);
+      res.status(200).send('A password reset link has been sent to the provided email if this email exists');
+      return;
+    }
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    await storeResetToken(resetToken, user._id);
+    const content = generateResetEmailContent(resetToken, user.id);
+    sendEmail({
+      to: email,
+      subject: 'Reset password for Postblog @annaludewig.net',
+      html: content,
+    });
+    console.log('Reset password email successfully sent.');
+    res.status(200).send('Reset password email successfully sent.');
+  } catch (error) {
+    handleError(error, res);
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  console.log('----------------- Resetting Password -------------------');
+  try {
+    const { token, userId, password } = req.body;
+    const parsedPassword = passwordParser.parse(password);
+    const dbToken = await ResetToken.findOne({ user: userId }).lean();
+    if (!dbToken) {
+      throw new HTTPError('No reset token found', 404);
+    }
+    await verifyResetPasswordToken(token, dbToken.token, dbToken.updatedAt);
+    const hashedPassword = await bcrypt.hash(parsedPassword, 10);
+    const result = await User.findByIdAndUpdate(
+      userId,
+      { $set: { password: hashedPassword } },
+      { new: true }
+    );
+    if (!result) {
+      throw new HTTPError('Could not set password.', 500);
+    }
+    await ResetToken.findByIdAndDelete(dbToken._id);
+    res.status(200).send('Successfully updated password');
+  } catch (error) {
+    handleError(error, res);
+  }
+};
+
 export const token = async (req: Request, res: Response) => {
+  console.log('---------------- Issuing access token -----------------')
   try {
     const refreshToken = req.body.token;
-    console.log('refreshToken: ', refreshToken);
     if (!refreshToken) {
       throw new HTTPError('Invalid request: token missing', 404);
     }
@@ -116,15 +134,10 @@ export const token = async (req: Request, res: Response) => {
     if (!userId) {
       throw new HTTPError('Invalid refresh token', 404);
     } else {
-      const response = await RefreshToken.findOne(
-        { user: userId, token: refreshToken },
-        {
-          'token.$': 1,
-        }
-      ).lean();
-      const dbRefreshToken = response?.token[0];
-      console.log('DB REFRESH TOKEN', dbRefreshToken);
-      if (!dbRefreshToken || dbRefreshToken !== refreshToken) {
+      const response = await Token.findOne({ user: userId }).lean();
+      const dbRefreshToken = response?.token.find((dbToken) => bcrypt.compare(refreshToken, dbToken));
+      // const dbRefreshToken = response?.token[0];
+      if (!dbRefreshToken) {
         throw new HTTPError('Unauthorized', 401);
       }
       const accessToken = generateAccessToken(userId);

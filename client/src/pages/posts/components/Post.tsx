@@ -20,7 +20,11 @@ export const Post = ({ post }: PostProps) => {
     <Grid2 key={post.id} size={{ xs: 12, md: 6, lg: 4 }}>
       <Link to={`${routes.post.baseRoute}/${post.id}`} hoverColor="black">
         <PostContainer padding="20px">
-          <PostImage src={post.image?.data} boxProps={{ borderRadius: 0, sx: {backgroundColor: '#f9f9f9'} }} imageProps={{ alt: post.title }} />
+          <PostImage
+            src={post.image?.data}
+            boxProps={{ borderRadius: 0, sx: { backgroundColor: '#f9f9f9' } }}
+            imageProps={{ alt: post.title }}
+          />
 
           <Box>
             <Title>{post.title}</Title>

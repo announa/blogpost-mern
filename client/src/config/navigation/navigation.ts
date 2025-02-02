@@ -6,6 +6,9 @@ export const routes = {
   updatePost: { name: 'Edit Article', baseRoute: '/update-post', route: '/update-post/:id' },
   login: { name: 'Login', baseRoute: '/login', route: '/login' },
   register: { name: 'Register', baseRoute: '/register', route: '/register' },
+  account: { name: 'Account Settings', baseRoute: '/account', route: '/account' },
+  forgotPassword: { name: 'Forgot Password', baseRoute: '/forgot-password', route: '/forgot-password' },
+  resetPassword: { name: 'Reset Password', baseRoute: '/reset-password', route: '/reset-password/:token/:id' },
 };
 
 export const sidebarRoutes = [routes.posts, routes.addPost];

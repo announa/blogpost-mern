@@ -1,5 +1,5 @@
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, IconButton, styled, TextField, Tooltip } from '@mui/material';
+import { Box, ButtonGroup, IconButton, styled, TextField, Tooltip, useTheme } from '@mui/material';
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/base/button/Button';
@@ -42,6 +42,7 @@ export interface EditPostProps {
 }
 
 export const EditPost = (props: EditPostProps) => {
+  const theme = useTheme();
   const {
     onSubmit,
     postToUpload,
@@ -61,7 +62,14 @@ export const EditPost = (props: EditPostProps) => {
 
   return (
     <PageContainer>
-      <PageHeader title={headerText} />
+      <PageHeader
+        title={headerText}
+        sx={{
+          [theme.breakpoints.up('md')]: {
+            width: '75%',
+          },
+        }}
+      />
 
       <StyledForm onSubmit={onSubmit}>
         <div>
@@ -130,6 +138,7 @@ export const EditPost = (props: EditPostProps) => {
             )}
           </Box>
         </Box>
+        <ButtonGroup/>
         <Box display="flex" justifyContent="space-between" gap="24px">
           <Button variant="outlined" onClick={() => navigate(cancelRedirectUrl)}>
             Cancel

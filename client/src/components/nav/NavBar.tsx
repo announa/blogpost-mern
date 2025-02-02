@@ -1,6 +1,7 @@
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import { Box, Menu, MenuItem } from '@mui/material';
 import { MouseEvent, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { routes, sidebarRoutes } from '../../config/navigation/navigation';
 import { useUserContext } from '../../context/useUserContext';
 import { useLogout } from '../../hooks/useLogout';
@@ -9,6 +10,7 @@ import { Link } from '../base/link/Link';
 import { LoadingOverlay } from '../base/loading-overlay/LoadingOverlay';
 
 export const NavBar = () => {
+  const navigate = useNavigate();
   const userContext = useUserContext();
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [loading, setLoading] = useState(false);
@@ -20,6 +22,12 @@ export const NavBar = () => {
     await logout(() => setLoading(false));
   };
   const isMenuOpen = useMemo(() => !!menuAnchor, [menuAnchor]);
+
+  const handleAccountSettingsClick = () => {
+    navigate(routes.account.route);
+    setMenuAnchor(null);
+  };
+  
   return (
     <Box
       position="absolute"
@@ -32,7 +40,7 @@ export const NavBar = () => {
       alignItems="center"
       padding="0 50px"
       zIndex={2}
-      sx={{background: 'white'}}
+      sx={{ background: 'white' }}
     >
       <Box display="flex" gap="24px">
         {sidebarRoutes.flatMap((route) =>
@@ -68,7 +76,7 @@ export const NavBar = () => {
             {userContext.user.firstName}
           </Button>
           <Menu open={isMenuOpen} anchorEl={menuAnchor} onClose={() => setMenuAnchor(null)}>
-            <MenuItem> Account Settings</MenuItem>
+            <MenuItem onClick={handleAccountSettingsClick}> Account Settings</MenuItem>
             <MenuItem onClick={handleLogout}> Logout</MenuItem>
           </Menu>
         </Box>

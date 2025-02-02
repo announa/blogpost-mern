@@ -13,6 +13,9 @@ import { Posts } from './pages/posts/Posts';
 import { Register } from './pages/register/Register';
 import { UpdatePost } from './pages/edit-post/update-post/UpdatePost';
 import { AddPost } from './pages/edit-post/add-post/AddPost';
+import { AccountSettings } from './pages/account-settings/AccountSettings';
+import { ForgotPassword } from './pages/forgot-password/forgotPassword';
+import { ResetPassword } from './pages/reset-password/resetPassword';
 
 const MainContainer = styled('div')({
   height: '100vh',
@@ -80,6 +83,12 @@ export const Main = () => {
               path={routes.register.route}
               element={!userContext?.user ? <Register /> : <Navigate to={routes.posts.route} replace />}
             />
+            <Route
+              path={routes.account.route}
+              element={userContext?.user ? <AccountSettings /> : <Navigate to={routes.login.route} replace />}
+            />
+            <Route path={routes.forgotPassword.route} element={<ForgotPassword />} />
+            <Route path={routes.resetPassword.route} element={<ResetPassword />} />
           </Routes>
         )}
       </PaperCard>

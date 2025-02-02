@@ -1,8 +1,8 @@
 import { ObjectId } from 'bson';
-import jwt, { SignOptions } from 'jsonwebtoken';
-import { getFile } from './getFile';
-import { HTTPError } from '../class/HTTPError';
 import { add } from 'date-fns';
+import jwt, { SignOptions } from 'jsonwebtoken';
+import { HTTPError } from '../../class/HTTPError';
+import { getFile } from '../getFile';
 
 export const generateRefreshToken = (userId: ObjectId | string) => {
   console.log('generating refresh token');

@@ -1,4 +1,4 @@
-import { styled, TextField, Typography, useTheme } from '@mui/material';
+import { Box, styled, TextField, Typography, useTheme } from '@mui/material';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { ChangeEvent, FormEvent, useMemo, useState } from 'react';
@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import validator from 'validator';
 import { z } from 'zod';
 import { Button } from '../../components/base/button/Button';
+import { ErrorMessage } from '../../components/base/error-message/ErrorMessage';
 import { Link } from '../../components/base/link/Link';
 import { LoadingOverlay } from '../../components/base/loading-overlay/LoadingOverlay';
 import { PaperCard } from '../../components/base/paper-card/PaperCard';
@@ -16,7 +17,7 @@ import { routes } from '../../config/navigation/navigation';
 import { User, useUserContext } from '../../context/useUserContext';
 import { useError } from '../../hooks/useError';
 import { StorageToken } from '../../hooks/useToken';
-import { handleError } from '../../utils/errorHandling';
+import { errorHasText, handleError } from '../../utils/errorHandling';
 
 type LoginResult = {
   accessToken: StorageToken;
@@ -60,6 +61,7 @@ export const Login = () => {
     errorMessages,
     inputParser: loginInputParser,
   });
+  const [loginError, setLoginError] = useState('');
 
   const redirectUrl = useMemo(() => state?.lastVisited ?? routes.posts.route, []);
 
@@ -94,8 +96,13 @@ export const Login = () => {
       const user = result.data.data;
       handleAuthResponse(accessToken, refreshToken, user);
       navigate(redirectUrl);
-    } catch (error) {
-      handleError(error, enqueueSnackbar);
+    } catch (error: unknown) {
+      const errorMessage = 'Incorrect user name or password';
+      if (errorHasText(error, [errorMessage])) {
+        setLoginError(errorMessage);
+      } else {
+        handleError(error, enqueueSnackbar);
+      }
       setLoading(false);
     }
   };
@@ -111,8 +118,9 @@ export const Login = () => {
   return (
     <PageContainer>
       <PaperCard maxWidth="450px">
-        <PageHeader title="Login" textAlign="center" />
+        <PageHeader fullWidth title="Login" />
         <StyledForm onSubmit={handleLogin}>
+          {loginError && <ErrorMessage>{loginError}</ErrorMessage>}
           <div>
             <TextField
               name="email"
@@ -144,19 +152,31 @@ export const Login = () => {
           <Button type="submit" disabled={isSubmitDisabled}>
             Login
           </Button>
-          <Typography variant="body2">
-            Not registered yet?{' '}
-            <Link
-              to={routes.register.route}
-              color={theme.palette.primary.main}
-              hoverColor={theme.palette.primary.light}
-              visitedColor={theme.palette.primary.main}
-              fontSize="14px"
-            >
-              Register
-            </Link>{' '}
-            first
-          </Typography>
+          <Box>
+            <Typography variant="body2" marginTop="12px">
+              <Link
+                to={routes.register.route}
+                color={theme.palette.primary.main}
+                hoverColor={theme.palette.primary.light}
+                visitedColor={theme.palette.primary.main}
+                fontSize="14px"
+              >
+                Register
+              </Link>{' '}
+              here
+            </Typography>
+            <Typography variant="body2" marginTop="8px">
+              <Link
+                to={routes.forgotPassword.route}
+                color={theme.palette.primary.main}
+                hoverColor={theme.palette.primary.light}
+                visitedColor={theme.palette.primary.main}
+                fontSize="14px"
+              >
+                Forgot password?
+              </Link>
+            </Typography>
+          </Box>
         </StyledForm>
       </PaperCard>
       <LoadingOverlay open={loading} />
