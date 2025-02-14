@@ -19,10 +19,11 @@ export const PageHeader = ({ title, customElement, fullWidth=false, typographyPr
   return (
     <StyledBox
       marginBottom="40px"
-      width="100%"
+      // width="100%"
       display="flex"
       justifyContent="space-between"
       alignItems="center"
+      // padding='0 112px 0 100px'
       fullWidth={fullWidth}
       {...props}
     >

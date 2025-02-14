@@ -6,7 +6,4 @@ export const FormContainer = styled('form')<{ maxWidth?: string }>(({ theme, max
   gap: '24px',
   width: '100%',
   maxWidth: maxWidth ?? 'unset',
-  [theme.breakpoints.up('md')]: {
-    width: '75%',
-  },
 }));

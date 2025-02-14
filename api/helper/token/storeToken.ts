@@ -18,11 +18,10 @@ export const storeRefreshToken = async (refreshToken: string, userId: ObjectId) 
 };
 
 export const storeResetToken = async (resetToken: string, userId: ObjectId) => {
-  const hashedResetToken = await bcrypt.hash(resetToken, 10)
-  const existingUserTokens = await ResetToken.findOne({ user: userId });
-  if (existingUserTokens) {
-    await ResetToken.findByIdAndUpdate(existingUserTokens._id, { token: hashedResetToken }, { new: true });
-  } else {
-    await ResetToken.create({ user: userId, token: hashedResetToken });
-  }
+  const hashedResetToken = await bcrypt.hash(resetToken, 10);
+  await ResetToken.findOneAndUpdate(
+    { user: userId },
+    { user: userId, token: hashedResetToken },
+    { upsert: true, new: true }
+  );
 };

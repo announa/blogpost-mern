@@ -7,15 +7,15 @@ import { NavBar } from './components/nav/NavBar';
 import { routes } from './config/navigation/navigation';
 import { useUserContext } from './context/useUserContext';
 import { useToken } from './hooks/useToken';
+import { AccountSettings } from './pages/account-settings/AccountSettings';
+import { AddPost } from './pages/edit-post/add-post/AddPost';
+import { UpdatePost } from './pages/edit-post/update-post/UpdatePost';
 import { Login } from './pages/login/Login';
 import { Post } from './pages/post/Post';
 import { Posts } from './pages/posts/Posts';
 import { Register } from './pages/register/Register';
-import { UpdatePost } from './pages/edit-post/update-post/UpdatePost';
-import { AddPost } from './pages/edit-post/add-post/AddPost';
-import { AccountSettings } from './pages/account-settings/AccountSettings';
-import { ForgotPassword } from './pages/forgot-password/forgotPassword';
-import { ResetPassword } from './pages/reset-password/resetPassword';
+import { ForgotPassword } from './pages/forgot-password/ForgotPassword';
+import { ResetPassword } from './pages/reset-password/ResetPassword';
 
 const MainContainer = styled('div')({
   height: '100vh',
@@ -29,7 +29,7 @@ const MainContainer = styled('div')({
   position: 'relative',
   padding: '10px',
   backgroundColor: '#efefef',
-  ['@media (min-width: 1200px)']: {
+  ['@media (min-width: 1400px)']: {
     padding: '10px 15vw',
   },
 });
@@ -55,7 +55,7 @@ export const Main = () => {
 
   return (
     <MainContainer>
-      <PaperCard flex={1} cardProps={{ padding: '0 50px 70px' }}>
+      <PaperCard flex={1}>
         <NavBar />
         {userContext?.loading ? (
           <LoadingOverlay open={true} />

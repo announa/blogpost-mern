@@ -1,4 +1,4 @@
-import { Box, styled, TextField, Typography, useTheme } from '@mui/material';
+import { Box, TextField, Typography, useTheme } from '@mui/material';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { ChangeEvent, FormEvent, useMemo, useState } from 'react';
@@ -7,6 +7,7 @@ import validator from 'validator';
 import { z } from 'zod';
 import { Button } from '../../components/base/button/Button';
 import { ErrorMessage } from '../../components/base/error-message/ErrorMessage';
+import { FormContainer } from '../../components/base/form-container/FormContainer';
 import { Link } from '../../components/base/link/Link';
 import { LoadingOverlay } from '../../components/base/loading-overlay/LoadingOverlay';
 import { PaperCard } from '../../components/base/paper-card/PaperCard';
@@ -24,14 +25,6 @@ type LoginResult = {
   refreshToken: StorageToken;
   data: User;
 };
-
-const StyledForm = styled('form')({
-  width: '100%',
-  maxWidth: '500px',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '24px',
-});
 
 const initialUserData = {
   email: '',
@@ -117,9 +110,9 @@ export const Login = () => {
 
   return (
     <PageContainer>
-      <PaperCard maxWidth="450px">
-        <PageHeader fullWidth title="Login" />
-        <StyledForm onSubmit={handleLogin}>
+      <PaperCard maxWidth="450px" background="#efefef" cardProps={{ padding: '50px' }}>
+        <PageHeader fullWidth title="Login" textAlign="center" typographyProps={{ width: '100%' }} />
+        <FormContainer onSubmit={handleLogin}>
           {loginError && <ErrorMessage>{loginError}</ErrorMessage>}
           <div>
             <TextField
@@ -131,6 +124,7 @@ export const Login = () => {
               fullWidth
               onBlur={() => validateInput('email')}
               onChange={(event) => handleChange(event, 'email')}
+              slotProps={{ input: { sx: { background: 'white' } } }}
               error={!!error.email}
             />
             {error.email && <FormError>{error.email}</FormError>}
@@ -145,6 +139,7 @@ export const Login = () => {
               fullWidth
               onBlur={() => validateInput('password')}
               onChange={(event) => handleChange(event, 'password')}
+              slotProps={{ input: { sx: { background: 'white' } } }}
               error={!!error.password}
             />
             {error.password && <FormError>{error.password}</FormError>}
@@ -177,7 +172,7 @@ export const Login = () => {
               </Link>
             </Typography>
           </Box>
-        </StyledForm>
+        </FormContainer>
       </PaperCard>
       <LoadingOverlay open={loading} />
     </PageContainer>

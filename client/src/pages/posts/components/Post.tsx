@@ -6,7 +6,7 @@ import { routes } from '../../../config/navigation/navigation';
 import { Post as PostType } from '../../../types/types';
 import { formatDate } from '../../../utils/formatDate';
 
-const PostContainer = styled(Box)({
+const PostContainer = styled(Grid2)({
   transition: 'background 100ms ease-in-out',
   '&:hover': { background: '#f6f6f6' },
 });
@@ -17,9 +17,9 @@ export interface PostProps {
 
 export const Post = ({ post }: PostProps) => {
   return (
-    <Grid2 key={post.id} size={{ xs: 12, md: 6, lg: 4 }}>
+    <PostContainer key={post.id} size={{ xs: 12, md: 6 }} >
       <Link to={`${routes.post.baseRoute}/${post.id}`} hoverColor="black">
-        <PostContainer padding="20px">
+        <Box padding="20px">
           <PostImage
             src={post.image?.data}
             boxProps={{ borderRadius: 0, sx: { backgroundColor: '#f9f9f9' } }}
@@ -32,8 +32,8 @@ export const Post = ({ post }: PostProps) => {
             <Date>{formatDate(post.createdAt)}</Date>
             <Summary>{post.summary}</Summary>
           </Box>
-        </PostContainer>
+        </Box>
       </Link>
-    </Grid2>
+    </PostContainer>
   );
 };

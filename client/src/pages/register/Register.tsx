@@ -6,15 +6,15 @@ import { useNavigate } from 'react-router-dom';
 import validator from 'validator';
 import { z } from 'zod';
 import { Link } from '../../components/base/link/Link';
+import { LoadingOverlay } from '../../components/base/loading-overlay/LoadingOverlay';
 import { PaperCard } from '../../components/base/paper-card/PaperCard';
 import { PageContainer } from '../../components/page/page-container/PageContainer';
 import { PageHeader } from '../../components/page/page-header/PageHeader';
 import { routes } from '../../config/navigation/navigation';
+import { useError } from '../../hooks/useError';
 import { handleError } from '../../utils/errorHandling';
 import { UserData, UserForm } from '../account-settings/form/UserForm';
 import { initialUserData, PASSWORD_REGEX, userErrorMessages } from '../account-settings/form/utils';
-import { useError } from '../../hooks/useError';
-import { LoadingOverlay } from '../../components/base/loading-overlay/LoadingOverlay';
 
 const userInputParser = z
   .object({
@@ -53,7 +53,7 @@ export const Register = () => {
   const handleRegistration = async (event: FormEvent, userData: UserData) => {
     event.preventDefault();
     try {
-      setLoading(true)
+      setLoading(true);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { repeatPassword, ...data } = userData;
       await axios.post(`${import.meta.env.VITE_AUTH_URL}${routes.register.route}`, data, {
@@ -66,13 +66,13 @@ export const Register = () => {
     } catch (error: unknown) {
       handleError(error, enqueueSnackbar);
     }
-    setLoading(false)
+    setLoading(false);
   };
 
   return (
     <PageContainer>
       <PaperCard maxWidth="500px" maxHeight="unset" marginBottom="50px">
-        <PageHeader title="Register" textAlign="center" />
+        <PageHeader title="Register" textAlign="center" typographyProps={{width: '100%'}}/>
         <UserForm
           fullWidth
           userData={userData}

@@ -83,7 +83,7 @@ export const Post = () => {
     return <NoData title="Post" />;
   }
   if (loading) {
-    return <Loading title="Loading..." maxWidth="700px" />;
+    return <Loading title="Loading..." />;
   }
 
   const EditButtons = (

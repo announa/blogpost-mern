@@ -106,7 +106,7 @@ export const Posts = () => {
   };
 
   const SearchFields = (
-    <Box width="100%" display="flex" gap="24px" padding="0 20px">
+    <Box width="100%" display="flex" gap="24px">
       <SearchField variant="outlined" placeholder="Author" search={search} setSearch={setSearch} />
       <SearchField
         variant="outlined"
@@ -139,12 +139,12 @@ export const Posts = () => {
     return <NoData title="Posts" />;
   }
   if (loading) {
-    return <Loading textAlign="center" title="Loading..." />;
+    return <Loading title="Loading..." />;
   }
   return (
-    <PageContainer>
-      <PageHeader title="" customElement={SearchFields} />
-      <Grid2 width="100%" container spacing={6} overflow="auto">
+    <PageContainer padding="60px 0 50px">
+      <PageHeader title="" fullWidth  customElement={SearchFields} padding='0 120px' />
+      <Grid2 width="100%" container spacing={1} overflow="auto" padding="0 100px">
         {postsToRender.map((post) => (
           <Post key={post.id} post={post} />
         ))}
