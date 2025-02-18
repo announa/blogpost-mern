@@ -11,7 +11,7 @@ export const generateRefreshToken = (userId: ObjectId | string) => {
     algorithm: 'RS256',
     subject: userId.toString(),
   };
-  const secret = getFile(process.env.PRIVATE_REFRESH_TOKEN_KEY as string);
+  const secret = Buffer.from(process.env.REFRESH_TOKEN_PRIVATE_KEY as string, 'base64').toString('utf-8');
   if (!secret) {
     console.error('Public key not found');
     throw new HTTPError('Internal server error', 500);
@@ -30,7 +30,7 @@ export const generateAccessToken = (userId: ObjectId | string) => {
     issuer: process.env.TOKEN_ISS,
     audience: process.env.TOKEN_AUD,
   };
-  const secret = getFile(process.env.PRIVATE_ACCESS_TOKEN_KEY as string);
+  const secret = Buffer.from(process.env.ACCESS_TOKEN_PRIVATE_KEY as string, 'base64').toString('utf-8');
   if (!secret) {
     console.error('Could not find private key');
     throw new HTTPError('Internal server error', 500);
