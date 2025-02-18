@@ -1,14 +1,21 @@
-import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
-import { Box, Menu, MenuItem } from '@mui/material';
+import AccountCircleOutlinedIcon from '@mui/icons-material/Person';
+import { Box, Menu, MenuItem, styled } from '@mui/material';
 import { MouseEvent, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { routes, sidebarRoutes } from '../../config/navigation/navigation';
+import logo from '../../assets/logo_new_transp.png';
+import { routes } from '../../config/navigation/navigation';
 import { useUserContext } from '../../context/useUserContext';
 import { useLogout } from '../../hooks/useLogout';
 import { Button } from '../base/button/Button';
 import { Link } from '../base/link/Link';
 import { LoadingOverlay } from '../base/loading-overlay/LoadingOverlay';
 
+const Logo = styled('img')(({ theme }) => ({
+  '&:hover': {
+    filter: `drop-shadow(2px 2px 2px ${theme.palette.primary.shadow})`,
+  },
+  transition: 'filter 250ms cubic-bezier(0.4, 0, 0.2, 1)',
+}));
 export const NavBar = () => {
   const navigate = useNavigate();
   const userContext = useUserContext();
@@ -27,7 +34,7 @@ export const NavBar = () => {
     navigate(routes.account.route);
     setMenuAnchor(null);
   };
-  
+
   return (
     <Box
       position="absolute"
@@ -38,39 +45,40 @@ export const NavBar = () => {
       display="flex"
       justifyContent="space-between"
       alignItems="center"
-      padding="0 50px"
+      padding="0 65px 0 50px"
       zIndex={2}
       sx={{ background: 'white' }}
     >
-      <Box display="flex" gap="24px">
-        {sidebarRoutes.flatMap((route) =>
-          route.route === routes.addPost.route && !userContext?.user ? (
-            []
-          ) : (
-            <Link key={route.route} to={route.route} color="black">
-              {route.name}
-            </Link>
-          )
+      <Box display="flex" alignItems="center" gap="32px">
+        <Link to={routes.posts.route}>
+          <Box width="100%" height="100%" display="flex" alignItems="center" justifyContent="center">
+            <Logo height={30} src={logo} />
+          </Box>
+        </Link>
+        {userContext?.user && (
+          <Link to={routes.addPost.route} color="black">
+            <Button variant="outlined">{routes.addPost.name}</Button>
+          </Link>
         )}
       </Box>
       {!userContext?.user ? (
-        <Box>
+        <Box display='flex' gap='12px'>
           <Link to={routes.login.route} color="black" fontSize="14px">
-            {routes.login.name}
-          </Link>{' '}
-          |{' '}
+            <Button>{routes.login.name}</Button>
+          </Link>
           <Link to={routes.register.route} color="black" fontSize="14px">
-            {routes.register.name}
+            <Button variant="outlined">{routes.register.name}</Button>
           </Link>
         </Box>
       ) : (
         <Box>
           <Button
             startIcon={<AccountCircleOutlinedIcon />}
-            variant="outlined"
+            variant="contained"
             aria-expanded={isMenuOpen ? 'true' : undefined}
             aria-controls={isMenuOpen ? 'basic-menu' : undefined}
             aria-haspopup="true"
+            sx={{ borderRadius: '30px', svg: { fontSize: '24px !important' } }}
             onClick={(event: MouseEvent<HTMLButtonElement>) => setMenuAnchor(event.currentTarget)}
           >
             {userContext.user.firstName}

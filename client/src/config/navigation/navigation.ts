@@ -1,7 +1,7 @@
 export const routes = {
   // dashboard: { name: 'Dashboard', baseRoute: '/', route: '/' },
   posts: { name: 'All Articles', baseRoute: '/', route: '/' },
-  addPost: { name: 'Write an Article', baseRoute: '/add-post', route: '/add-post' },
+  addPost: { name: 'New Article', baseRoute: '/add-post', route: '/add-post' },
   post: { name: 'Article', baseRoute: '/post', route: '/post/:id' },
   updatePost: { name: 'Edit Article', baseRoute: '/update-post', route: '/update-post/:id' },
   login: { name: 'Login', baseRoute: '/login', route: '/login' },

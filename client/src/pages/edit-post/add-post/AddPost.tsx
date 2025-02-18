@@ -1,3 +1,4 @@
+import { useTheme } from '@mui/material';
 import { FormEvent, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../../../config/navigation/navigation';
@@ -8,6 +9,7 @@ import { EditPost } from '../component/EditPost';
 
 export const AddPost = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
   const {
     postToUpload,
     setPostToUpload,
@@ -42,7 +44,16 @@ export const AddPost = () => {
   };
 
   if (loading) {
-    return <Loading title="Loading..." maxWidth="700px" />;
+    return (
+      <Loading
+        title="Loading..."
+        sx={{
+          [theme.breakpoints.up('md')]: {
+            width: '75%',
+          },
+        }}
+      />
+    );
   }
 
   return (

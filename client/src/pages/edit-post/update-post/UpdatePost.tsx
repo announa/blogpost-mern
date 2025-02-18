@@ -12,10 +12,12 @@ import { Post } from '../../../types/types';
 import { handleError } from '../../../utils/errorHandling';
 import { Loading } from '../../loading/Loading';
 import { EditPost } from '../component/EditPost';
+import { useTheme } from '@mui/material';
 
 export const UpdatePost = () => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
+  const theme = useTheme();
   const { id } = useParams();
   const userContext = useUserContext();
   const [currentPost, setCurrentPost] = useState<PostToEdit | null>(null);
@@ -111,7 +113,16 @@ export const UpdatePost = () => {
   };
 
   if (loading) {
-    return <Loading title={currentPost ? 'Updating Article' : 'Loading...'} maxWidth="700px" />;
+    return (
+      <Loading
+        title={currentPost ? 'Updating Article' : 'Loading...'}
+        sx={{
+          [theme.breakpoints.up('md')]: {
+            width: '75%',
+          },
+        }}
+      />
+    );
   }
 
   return (

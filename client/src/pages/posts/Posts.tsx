@@ -106,7 +106,7 @@ export const Posts = () => {
   };
 
   const SearchFields = (
-    <Box width="100%" display="flex" gap="24px">
+    <Box width="100%" display="flex" justifyContent="center" gap="24px" marginTop="50px">
       <SearchField variant="outlined" placeholder="Author" search={search} setSearch={setSearch} />
       <SearchField
         variant="outlined"
@@ -115,7 +115,7 @@ export const Posts = () => {
         search={search}
         setSearch={setSearch}
       />
-      <FormControl size="small" sx={{ flex: 1 }}>
+      <FormControl size="small" sx={{ flex: 1, maxWidth: '250px' }}>
         <InputLabel id="orderBy">Order by</InputLabel>
         <Select
           value={orderBy}
@@ -142,9 +142,9 @@ export const Posts = () => {
     return <Loading title="Loading..." />;
   }
   return (
-    <PageContainer padding="60px 0 50px">
-      <PageHeader title="" fullWidth  customElement={SearchFields} padding='0 120px' />
-      <Grid2 width="100%" container spacing={1} overflow="auto" padding="0 100px">
+    <PageContainer padding="60px 0 0">
+      <PageHeader title="" customElement={SearchFields} padding="0 65px 0 50px" />
+      <Grid2 width="100%" container spacing={1} overflow="auto" padding="0 40px">
         {postsToRender.map((post) => (
           <Post key={post.id} post={post} />
         ))}

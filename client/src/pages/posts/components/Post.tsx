@@ -19,7 +19,7 @@ export const Post = ({ post }: PostProps) => {
   return (
     <PostContainer key={post.id} size={{ xs: 12, md: 6 }} >
       <Link to={`${routes.post.baseRoute}/${post.id}`} hoverColor="black">
-        <Box padding="20px">
+        <Box padding="12px">
           <PostImage
             src={post.image?.data}
             boxProps={{ borderRadius: 0, sx: { backgroundColor: '#f9f9f9' } }}
@@ -27,9 +27,11 @@ export const Post = ({ post }: PostProps) => {
           />
 
           <Box>
-            <Title>{post.title}</Title>
+            <Box display='flex' justifyContent='space-between' marginTop='12px'>
             <Author>{post.author.userName}</Author>
             <Date>{formatDate(post.createdAt)}</Date>
+            </Box>
+            <Title>{post.title}</Title>
             <Summary>{post.summary}</Summary>
           </Box>
         </Box>

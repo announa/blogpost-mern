@@ -1,11 +1,12 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { Box, IconButton, Tooltip, useTheme } from '@mui/material';
+import { Box, Tooltip, useTheme } from '@mui/material';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import sanitize from 'sanitize-html';
+import { IconButton } from '../../components/base/icon-button/IconButton';
 import { PageContainer } from '../../components/page/page-container/PageContainer';
 import { PageHeader } from '../../components/page/page-header/PageHeader';
 import {
@@ -89,12 +90,12 @@ export const Post = () => {
   const EditButtons = (
     <Box display="flex" justifyContent="space-between">
       <Tooltip title="Edit Article">
-        <IconButton sx={{ '&:focus': { outline: 'none' } }} onClick={handleEditClick}>
+        <IconButton onClick={handleEditClick}>
           <EditIcon />
         </IconButton>
       </Tooltip>
       <Tooltip title="Delete Article">
-        <IconButton sx={{ '&:focus': { outline: 'none' } }} onClick={handleDelete}>
+        <IconButton onClick={handleDelete}>
           <DeleteIcon />
         </IconButton>
       </Tooltip>
@@ -106,10 +107,10 @@ export const Post = () => {
       <Box
         flex={1}
         width="100%"
-        maxWidth="700px"
+        // maxWidth="700px"
         sx={{
           [theme.breakpoints.up('md')]: {
-            width: '75%',
+            // width: '75%',
           },
         }}
       >

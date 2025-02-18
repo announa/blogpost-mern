@@ -22,7 +22,7 @@ export interface PaperCardProps extends BoxProps {
 export const PaperCard = ({ cardProps, children, background, ...boxProps }: PaperCardProps) => {
   return (
     <Box borderRadius="4px" width="100%" maxHeight="100%" {...boxProps} padding="10px">
-      <StyledCard padding='50px' {...cardProps} background={background}>
+      <StyledCard padding='0 0 50px' {...cardProps} background={background}>
         {children}
       </StyledCard>
     </Box>
