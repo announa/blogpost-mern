@@ -4,21 +4,29 @@ import { Button } from '../base/button/Button';
 
 export interface ButtonGroupProps extends BoxProps {
   cancelRedirectUrl?: string;
-  isSubmitDisabled?: boolean;
-  submitButtonText: string;
-  onCancelAction?: () => void;
+  isConfirmDisabled?: boolean;
+  confirmButtonText: string;
+  onCancel?: () => void;
+  onConfirm?: () => void;
 }
 export const ButtonGroup = (props: ButtonGroupProps) => {
-  const { submitButtonText, cancelRedirectUrl, isSubmitDisabled, onCancelAction, ...boxProps } = props;
+  const {
+    confirmButtonText: submitButtonText,
+    cancelRedirectUrl,
+    isConfirmDisabled: isSubmitDisabled,
+    onCancel,
+    onConfirm,
+    ...boxProps
+  } = props;
   const navigate = useNavigate();
   return (
     <Box display="flex" justifyContent="space-between" gap="24px" marginTop="18px" {...boxProps}>
-      {(cancelRedirectUrl || onCancelAction) && (
+      {(cancelRedirectUrl || onCancel) && (
         <Button
           variant="outlined"
           onClick={() => {
-            if (onCancelAction) {
-              onCancelAction();
+            if (onCancel) {
+              onCancel();
             }
             if (cancelRedirectUrl) {
               navigate(cancelRedirectUrl);
@@ -29,8 +37,8 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
         </Button>
       )}
       <Button
-        sx={{ width: !(cancelRedirectUrl || onCancelAction) ? '100%' : 'unset', borderRadius: '30px' }}
-        type="submit"
+        sx={{ width: !(cancelRedirectUrl || onCancel) ? '100%' : 'unset', borderRadius: '30px' }}
+        type={onConfirm ? 'button' : 'submit'}
         disabled={isSubmitDisabled}
       >
         {submitButtonText}

@@ -1,6 +1,6 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { Box, Tooltip, useTheme } from '@mui/material';
+import { Box, Tooltip } from '@mui/material';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { useEffect, useMemo, useState } from 'react';
@@ -25,9 +25,9 @@ import { handleError } from '../../utils/errorHandling';
 import { formatDate } from '../../utils/formatDate';
 import { Loading } from '../loading/Loading';
 import { NoData } from '../no-data/NoData';
+import { DeleteModal } from './delete-modal/DeleteModal';
 
 export const Post = () => {
-  const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
   const userContext = useUserContext();
   const navigate = useNavigate();
@@ -36,6 +36,7 @@ export const Post = () => {
   const [post, setPost] = useState<IPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [noDataError, setNoDataError] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const userIsAuthor = useMemo(
     () => userContext?.user?.id === post?.author.id,
@@ -89,35 +90,26 @@ export const Post = () => {
 
   const EditButtons = (
     <Box display="flex" justifyContent="space-between">
-      <Tooltip title="Edit Article">
-        <IconButton onClick={handleEditClick}>
-          <EditIcon />
-        </IconButton>
+      <Tooltip title="Edit Article" disableHoverListener={false}>
+        <div>
+          <IconButton onClick={handleEditClick}>
+            <EditIcon />
+          </IconButton>
+        </div>
       </Tooltip>
       <Tooltip title="Delete Article">
-        <IconButton onClick={handleDelete}>
-          <DeleteIcon />
-        </IconButton>
+        <div>
+          <IconButton onClick={() => setIsDeleteModalOpen(true)}>
+            <DeleteIcon />
+          </IconButton>
+        </div>
       </Tooltip>
     </Box>
   );
 
   return (
     <PageContainer>
-      <Box
-        flex={1}
-        width="100%"
-        // maxWidth="700px"
-        sx={{
-          [theme.breakpoints.up('md')]: {
-            // width: '75%',
-          },
-        }}
-      >
-        <PageHeader
-          title={post?.title ?? 'Post not found'}
-          customElement={userContext?.user && userIsAuthor ? EditButtons : undefined}
-        />
+      <Box flex={1} width="100%">
         <Box marginBottom="24px">
           <PostImage
             src={post?.image?.data}
@@ -130,10 +122,23 @@ export const Post = () => {
             <Author>{post?.author.userName}</Author>
             <Date>{formatDate(post?.createdAt)}</Date>{' '}
           </PostInformation>
-          <Summary>{post?.summary}</Summary>
+          <PageHeader
+            title={post?.title ?? 'Post not found'}
+            customElement={userContext?.user && userIsAuthor ? EditButtons : undefined}
+            typographyProps={{ fontWeight: 600, fontSize: '30px' }}
+            marginBottom="24px"
+          />
+          <Summary bold large margin="0 0 48px">
+            {post?.summary}
+          </Summary>
           <Content dangerouslySetInnerHTML={post?.content ? { __html: sanitize(post.content) } : undefined} />
         </Box>
       </Box>
+      <DeleteModal
+        isDeleteModalOpen={isDeleteModalOpen}
+        onConfirm={handleDelete}
+        onClose={() => setIsDeleteModalOpen(false)}
+      />
     </PageContainer>
   );
 };

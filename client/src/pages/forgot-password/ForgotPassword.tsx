@@ -1,20 +1,20 @@
 import { Box, TextField, Typography } from '@mui/material';
+import axios from 'axios';
+import { useSnackbar } from 'notistack';
 import { FormEvent, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import validator from 'validator';
 import { z } from 'zod';
 import { ErrorMessage } from '../../components/base/error-message/ErrorMessage';
 import { FormContainer } from '../../components/base/form-container/FormContainer';
+import { LoadingOverlay } from '../../components/base/loading-overlay/LoadingOverlay';
 import { PaperCard } from '../../components/base/paper-card/PaperCard';
 import { ButtonGroup } from '../../components/button-group/ButtonGroup';
 import { PageContainer } from '../../components/page/page-container/PageContainer';
 import { PageHeader } from '../../components/page/page-header/PageHeader';
 import { routes } from '../../config/navigation/navigation';
 import { useError } from '../../hooks/useError';
-import axios from 'axios';
 import { handleError } from '../../utils/errorHandling';
-import { useSnackbar } from 'notistack';
-import { useNavigate } from 'react-router-dom';
-import { LoadingOverlay } from '../../components/base/loading-overlay/LoadingOverlay';
 
 const forgotPasswordParser = z.object({
   email: z.string().refine((value) => validator.isEmail(value)),
@@ -70,8 +70,8 @@ export const ForgotPassword = () => {
           />
           {error.email && <ErrorMessage>{error.email}</ErrorMessage>}
           <ButtonGroup
-            submitButtonText="Send"
-            isSubmitDisabled={isSubmitDisabled}
+            confirmButtonText="Send"
+            isConfirmDisabled={isSubmitDisabled}
             cancelRedirectUrl={routes.login.route}
           />
         </FormContainer>

@@ -114,8 +114,8 @@ export const ResetPassword = () => {
           />
           {error.repeatPassword && <ErrorMessage>{error.repeatPassword}</ErrorMessage>}
           <ButtonGroup
-            submitButtonText="Reset Password"
-            isSubmitDisabled={isSubmitDisabled}
+            confirmButtonText="Reset Password"
+            isConfirmDisabled={isSubmitDisabled}
             cancelRedirectUrl={routes.login.route}
           />
         </FormContainer>

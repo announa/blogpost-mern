@@ -72,7 +72,7 @@ export const Register = () => {
   return (
     <PageContainer>
       <PaperCard maxWidth="500px" maxHeight="unset" marginBottom="50px">
-        <PageHeader title="Register" textAlign="center" typographyProps={{width: '100%'}}/>
+        <PageHeader title="Register" textAlign="center" typographyProps={{ width: '100%' }} />
         <UserForm
           fullWidth
           userData={userData}
@@ -81,7 +81,7 @@ export const Register = () => {
           validateInput={validateInput}
           validatedInput={validatedInput}
           onSubmit={handleRegistration}
-          buttonGroupProps={{ submitButtonText: 'Register' }}
+          buttonGroupProps={{ confirmButtonText: 'Register' }}
         />
         <Typography variant="body2">
           Already got an account? Go to{' '}

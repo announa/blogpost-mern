@@ -163,7 +163,7 @@ export const UserForm = ({
       </Grid2>
       <ButtonGroup
         {...buttonGroupProps}
-        isSubmitDisabled={buttonGroupProps.isSubmitDisabled ?? isSubmitDisabled}
+        isConfirmDisabled={buttonGroupProps.isConfirmDisabled ?? isSubmitDisabled}
       />
     </FormContainer>
   );

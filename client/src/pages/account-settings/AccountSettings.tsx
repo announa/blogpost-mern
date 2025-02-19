@@ -128,9 +128,9 @@ export const AccountSettings = () => {
         editMode={editMode}
         onSubmit={handleUpdateUser}
         buttonGroupProps={{
-          submitButtonText: 'Update User Data',
-          onCancelAction: () => setEditMode(false),
-          isSubmitDisabled,
+          confirmButtonText: 'Update User Data',
+          onCancel: () => setEditMode(false),
+          isConfirmDisabled: isSubmitDisabled,
           alignItems: 'flex-end',
           marginTop: '32px',
         }}
