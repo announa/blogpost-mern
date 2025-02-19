@@ -7,7 +7,7 @@ import { routes } from '../config/navigation/navigation';
 import { handleError } from '../utils/errorHandling';
 import { useToken } from './useToken';
 
-const initialPost = {
+export const initialPost = {
   title: '',
   summary: '',
   content: '',

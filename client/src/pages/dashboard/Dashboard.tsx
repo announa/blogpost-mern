@@ -19,7 +19,7 @@ export const Dashboard = () => {
           {actions.map((action) => (
             <Grid2 key={action.title} size={6}>
               <Link to={action.route}>
-                <PaperCard height="200px" center>
+                <PaperCard height="200px">
                   {action.title}
                 </PaperCard>
               </Link>

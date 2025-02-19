@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import { Dispatch, SetStateAction, useState } from 'react';
 import ReactQuill from 'react-quill';
-import { PostToEdit } from '../../pages/edit-post/update-post/EditPost';
+import { initialPost, PostToEdit } from '../../hooks/useEditPostForm';
 
 const StyledEditor = styled(ReactQuill)({
   borderRadius: '4px',
@@ -47,9 +47,9 @@ export const Editor = (props: EditorProps) => {
   const handleChange = (newContent: string) => {
     if (!editorContent) {
       setEditorContent(content);
-      setPost((prev) => ({ ...prev, content: newContent }));
+      setPost((prev: typeof initialPost) => ({ ...prev, content: newContent }));
     } else {
-      setPost((prev) => ({ ...prev, content: newContent }));
+      setPost((prev: typeof initialPost) => ({ ...prev, content: newContent }));
     }
   };
 

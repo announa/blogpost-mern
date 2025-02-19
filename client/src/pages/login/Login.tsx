@@ -111,7 +111,7 @@ export const Login = () => {
   return (
     <PageContainer>
       <PaperCard maxWidth="450px" background="#efefef" cardProps={{ padding: '50px' }}>
-        <PageHeader fullWidth title="Login" textAlign="center" typographyProps={{ width: '100%' }} />
+        <PageHeader title="Login" textAlign="center" typographyProps={{ width: '100%' }} />
         <FormContainer onSubmit={handleLogin}>
           {loginError && <ErrorMessage>{loginError}</ErrorMessage>}
           <div>

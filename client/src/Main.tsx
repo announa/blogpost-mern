@@ -37,7 +37,7 @@ const MainContainer = styled('div')({
 export const Main = () => {
   const userContext = useUserContext();
   const { getAccessToken } = useToken();
-  const timeoutId = useRef<number | undefined>(undefined);
+  const timeoutId = useRef< NodeJS.Timeout | undefined>(undefined);
 
   const verifyUserIsLoggedIn = () => {
     clearTimeout(timeoutId.current);

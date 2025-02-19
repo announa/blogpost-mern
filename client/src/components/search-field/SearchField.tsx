@@ -13,7 +13,7 @@ export const SearchField = <T extends Record<string, string>>({
 }: SearchFieldProps<T>) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const name = textFieldProps.name as keyof T;
-  const timeout = useRef<number | null>(null);
+  const timeout = useRef<NodeJS.Timeout | null>(null);
 
   const debounceOnChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (timeout.current) {
