@@ -1,1 +1,1 @@
-{ "version": 2, "rewrites": [{ "source": "/(.*)", "destination": "/api/dist/index.js" }], "outputDirectory": "/api/dist" }
+{ "version": 2, "rewrites": [{ "source": "/(.*)", "destination": "/api/index.js" }] }
