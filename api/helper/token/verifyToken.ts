@@ -14,7 +14,7 @@ const verifyJwt = (token: string, publicKey: string) => {
 
 export const verifyRefreshToken = (token: string) => {
   console.log('Verifying token');
-  const publicKey = getFile(process.env.PUBLIC_REFRESH_TOKEN_KEY as string) as string;
+  const publicKey = Buffer.from(process.env.REFRESH_TOKEN_PUBLIC_KEY as string, 'base64').toString('utf-8');
   if (!publicKey) {
     throw new HTTPError('Internal server error', 500);
   } else {
