@@ -9,12 +9,13 @@ import { generateAccessToken, generateRefreshToken } from '../helper/token/gener
 import { verifyRefreshToken, verifyResetPasswordToken } from '../helper/token/verifyToken';
 import { RefreshToken as Token } from '../models/refreshToken.model';
 import { User } from '../models/user.model';
-import { getUserFromDb } from '../helper/token/getFromDb/getFromDb';
+import { getUserFromDb } from '../helper/dbRequests/getFromDb';
 import crypto from 'crypto';
 import { storeRefreshToken, storeResetToken } from '../helper/token/storeToken';
 import { sendEmail } from '../helper/email/sendEmail';
 import { generateResetEmailContent } from '../helper/email/generateResetEmailContent';
 import { ResetToken } from '../models/resetToken.model';
+import { verifyFields } from '../helper/dbRequests/verifyFields';
 
 export type UnwrapModel<T> = T extends Model<infer U> ? U : never;
 export type IUser = UnwrapModel<typeof User> & { _id: ObjectId };
@@ -58,10 +59,12 @@ export const register = async (req: Request, res: Response) => {
   try {
     const signUpInformation = registerInputParser.parse(req.body);
     const hashedPassword = await bcrypt.hash(signUpInformation.password, 10);
+    await verifyFields({ userName: signUpInformation.userName, email: signUpInformation.email });
     const newUser = await User.create({ ...signUpInformation, password: hashedPassword });
     if (!newUser) {
       throw new HTTPError('Could not create new user', 500);
     }
+    console.log('Successfully created new user')
     res.status(200).json(newUser);
   } catch (error) {
     handleError(error, res);
@@ -123,7 +126,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 };
 
 export const token = async (req: Request, res: Response) => {
-  console.log('---------------- Issuing access token -----------------')
+  console.log('---------------- Issuing access token -----------------');
   try {
     const refreshToken = req.body.token;
     if (!refreshToken) {

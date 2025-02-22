@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
-import { HTTPError } from '../../../class/HTTPError';
-import { GetUserIdInput, IUser } from '../../../controllers/auth.controller';
-import { User } from '../../../models/user.model';
+import { HTTPError } from '../../class/HTTPError';
+import { GetUserIdInput, IUser } from '../../controllers/auth.controller';
+import { User } from '../../models/user.model';
 
 export const getUserFromDb = async ({ email, password }: GetUserIdInput) => {
   console.log('Retrieving user from DB');

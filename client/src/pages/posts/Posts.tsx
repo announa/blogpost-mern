@@ -37,7 +37,6 @@ const orderByCombinations: OrderBy = {
   authorAsc: { category: 'author', direction: 'asc' },
   authorDesc: { category: 'author', direction: 'desc' },
 };
-// type OrderBy = typeof orderBy
 
 type OrderByKey = 'dateAsc' | 'dateDesc' | 'titleAsc' | 'titleDesc' | 'authorAsc' | 'authorDesc';
 

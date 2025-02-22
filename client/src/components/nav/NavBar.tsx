@@ -55,14 +55,12 @@ export const NavBar = () => {
             <Logo height={30} src={logo} />
           </Box>
         </Link>
-        {userContext?.user && (
-          <Link to={routes.addPost.route} color="black">
-            <Button variant="outlined">{routes.addPost.name}</Button>
-          </Link>
-        )}
+        <Link to={routes.addPost.route} color="black">
+          <Button variant="outlined">{routes.addPost.name}</Button>
+        </Link>
       </Box>
       {!userContext?.user ? (
-        <Box display='flex' gap='12px'>
+        <Box display="flex" gap="12px">
           <Link to={routes.login.route} color="black" fontSize="14px">
             <Button>{routes.login.name}</Button>
           </Link>

@@ -30,14 +30,14 @@ const MainContainer = styled('div')({
   padding: '10px',
   backgroundColor: '#efefef',
   ['@media (min-width: 1400px)']: {
-    padding: '10px 15vw',
+    padding: '10px 10vw',
   },
 });
 
 export const Main = () => {
   const userContext = useUserContext();
   const { getAccessToken } = useToken();
-  const timeoutId = useRef< NodeJS.Timeout | undefined>(undefined);
+  const timeoutId = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const verifyUserIsLoggedIn = () => {
     clearTimeout(timeoutId.current);
@@ -63,7 +63,13 @@ export const Main = () => {
           <Routes>
             <Route
               path={routes.addPost.route}
-              element={userContext?.user ? <AddPost /> : <Navigate to={routes.posts.route} replace />}
+              element={
+                userContext?.user ? (
+                  <AddPost />
+                ) : (
+                  <Navigate to={routes.login.route} state={{ lastVisited: routes.addPost.route }} replace />
+                )
+              }
             />
             <Route
               path={routes.updatePost.baseRoute}
