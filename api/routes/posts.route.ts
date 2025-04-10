@@ -5,7 +5,6 @@ import { verifyToken } from '../middleware/verifyToken';
 
 const router = express.Router();
 
-
 router.get('/', getPosts);
 router.get('/:id', getPost);
 router.post('/', [verifyToken, upload.single('image')], createPost);

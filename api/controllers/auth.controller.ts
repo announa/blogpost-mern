@@ -47,7 +47,6 @@ export const logout = async (req: Request, res: Response) => {
   try {
     const userId = req.userId;
     const response = await Token.findOneAndDelete({ user: userId }).lean();
-    console.log(response);
     res.status(200).send('Successfully logged out');
   } catch (error) {
     handleError(error, res);

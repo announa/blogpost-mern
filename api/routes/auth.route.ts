@@ -1,15 +1,13 @@
 import express from 'express';
-import { upload } from '../middleware/upload-file';
-import { createPost, deletePost, getPost, getPosts, updatePost } from '../controllers/post.controller';
-import { verifyToken } from '../middleware/verifyToken';
 import {
   login,
   logout,
-  token,
   register,
   requestResetPassword,
   resetPassword,
+  token,
 } from '../controllers/auth.controller';
+import { verifyToken } from '../middleware/verifyToken';
 
 const router = express.Router();
 

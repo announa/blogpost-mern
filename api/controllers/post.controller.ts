@@ -19,12 +19,6 @@ type PostWithImageAndAuthor = Omit<IPost, 'image' | '_id' | 'author'> & {
 };
 type IUpdatePostData = Omit<IPost, 'image'> & { image: IPost['image'] | 'null' };
 
-const getLogResult = (data: PostWithImageAndAuthor) =>
-  `${JSON.stringify({
-    ...data,
-    image: data.image ? { ...data.image, file: JSON.stringify(data.image?.file).slice(0, 50) } : null,
-  })}`;
-
 const mapPost = (post: PostWithImageAndAuthor) => {
   const image = post?.image?.file?.toString('base64');
   const { _id: authorId, userName } = post.author;
@@ -113,9 +107,9 @@ export const createPost = async (req: Request, res: Response) => {
       imageId = createdImage._id;
       console.log(`Image successfully created:\n ${createdImage}`);
     }
-    const post = await Post.create({ ...req.body, image: imageId, author: userId });
+    const { _id, ...post } = await Post.create({ ...req.body, image: imageId, author: userId });
     console.log(`Post successfully created:\n ${post}`);
-    res.status(200).json(post);
+    res.status(200).json({ id: _id, post });
   } catch (error) {
     handleError(error, res);
   }
@@ -127,8 +121,9 @@ const updatePostData = async (id: ObjectId, data: IUpdatePostData, userId: strin
   if (!updatedPost) {
     throw new HTTPError(`Post with id ${id} could not be found and updated`, 404);
   }
-  return updatedPost;
-};
+  const { _id, ...post } = updatedPost;
+  return { id: _id, post };
+};  
 
 const updateImage = async (id: ObjectId, file: Express.Multer.File) => {
   const updatedImage = await Image.findByIdAndUpdate(id, file, { new: true });
