@@ -73,6 +73,7 @@ export const UserForm = ({
             value={userData.firstName}
             onBlur={() => validateInput('firstName')}
             onChange={(event) => setUserData({ ...userData, firstName: event.target.value })}
+            slotProps={{ input: { sx: { background: 'white' } } }}
             error={!!error.firstName}
           />
           {error.firstName && <ErrorMessage>{error.firstName}</ErrorMessage>}
@@ -88,6 +89,7 @@ export const UserForm = ({
             value={userData.lastName}
             onBlur={() => validateInput('lastName')}
             onChange={(event) => setUserData({ ...userData, lastName: event.target.value })}
+            slotProps={{ input: { sx: { background: 'white' } } }}
             error={!!error.lastName}
           />
           {error.lastName && <ErrorMessage>{error.lastName}</ErrorMessage>}
@@ -103,6 +105,7 @@ export const UserForm = ({
             onBlur={() => validateInput('userName')}
             value={userData.userName}
             onChange={(event) => setUserData({ ...userData, userName: event.target.value })}
+            slotProps={{ input: { sx: { background: 'white' } } }}
             error={!!error.userName}
           />
           {error.userName && <ErrorMessage>{error.userName}</ErrorMessage>}
@@ -118,6 +121,7 @@ export const UserForm = ({
             onBlur={() => validateInput('email')}
             value={userData.email}
             onChange={(event) => setUserData({ ...userData, email: event.target.value })}
+            slotProps={{ input: { sx: { background: 'white' } } }}
             error={!!error.email}
           />
           {error.email && <ErrorMessage>{error.email}</ErrorMessage>}
@@ -141,6 +145,7 @@ export const UserForm = ({
             }}
             value={userData.password}
             onChange={(event) => setUserData({ ...userData, password: event.target.value })}
+            slotProps={{ input: { sx: { background: 'white' } } }}
             error={!!error.password}
           />
           {error.password && <ErrorMessage>{error.password}</ErrorMessage>}
@@ -156,6 +161,7 @@ export const UserForm = ({
             onBlur={() => validateInput('repeatPassword')}
             value={userData.repeatPassword}
             onChange={(event) => setUserData({ ...userData, repeatPassword: event.target.value })}
+            slotProps={{ input: { sx: { background: 'white' } } }}
             error={!!error.repeatPassword}
           />
           {error.repeatPassword && <ErrorMessage>{error.repeatPassword}</ErrorMessage>}

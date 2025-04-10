@@ -149,6 +149,7 @@ export const Login = () => {
           </Button>
           <Box>
             <Typography variant="body2" marginTop="12px">
+              Don't have an account? &nbsp;
               <Link
                 to={routes.register.route}
                 color={theme.palette.primary.main}
@@ -157,8 +158,7 @@ export const Login = () => {
                 fontSize="14px"
               >
                 Register
-              </Link>{' '}
-              here
+              </Link>
             </Typography>
             <Typography variant="body2" marginTop="8px">
               <Link

@@ -91,7 +91,7 @@ export const useEditPostForm = () => {
           variant: 'success',
           autoHideDuration: 3000,
         });
-        return result.data._id as string;
+        return result.data.id as string;
       }
     } catch (error: unknown) {
       handleError(error, enqueueSnackbar, 'Post could not be updated');

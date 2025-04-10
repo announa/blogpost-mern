@@ -71,7 +71,7 @@ export const Register = () => {
 
   return (
     <PageContainer>
-      <PaperCard maxWidth="500px" maxHeight="unset" marginBottom="50px">
+      <PaperCard maxWidth="500px" maxHeight="unset" marginBottom="50px" background="#efefef" cardProps={{ padding: '50px' }}>
         <PageHeader title="Register" textAlign="center" typographyProps={{ width: '100%' }} />
         <UserForm
           fullWidth
