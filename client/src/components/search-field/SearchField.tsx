@@ -36,7 +36,7 @@ export const SearchField = <T extends Record<string, string>>({
       }}
       hidden
       size="small"
-      sx={{ flex: 1, maxWidth: '250px' }}
+      sx={{ flex: 1, maxWidth: '350px' }}
     />
   );
 };

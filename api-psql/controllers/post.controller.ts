@@ -36,6 +36,7 @@ const mapPost = (post: PostWithImageAndAuthor) => {
 };
 
 export const getPosts = async (req: Request, res: Response) => {
+  console.log('getPosts');
   try {
     const result = await pool.query<PostWithImageAndAuthor>(
       `
@@ -135,7 +136,7 @@ export const createPost = async (req: Request, res: Response) => {
 };
 
 const updatePostData = async (id: number, data: string, userId: number) => {
-  console.log('update post data', userId);
+  console.log('update post data', data);
   const result = await pool.query<Post>(
     `UPDATE posts SET ${data}
     WHERE id = $1 AND author = $2
@@ -198,7 +199,7 @@ const generateRequestValueString = (
   const dataArr = Object.entries(data);
   const dataStringToUpdate = dataArr.reduce((acc, [key, value], index) => {
     if (key !== 'id') {
-      acc += `${key} = ${key === 'image' ? imageId : `${value}`},`;
+      acc += `${key} = ${key === 'image' ? imageId ?? 'NULL' : `'${value}'`},`;
     }
 
     return acc;

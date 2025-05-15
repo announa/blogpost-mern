@@ -1,3 +1,4 @@
+import { useTheme } from '@mui/material';
 import axios from 'axios';
 import { isEqual } from 'lodash';
 import { useSnackbar } from 'notistack';
@@ -5,21 +6,20 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import 'react-quill/dist/quill.snow.css';
 import { useNavigate, useParams } from 'react-router-dom';
 import { routes } from '../../../config/navigation/navigation';
-import { useUserContext } from '../../../context/useUserContext';
+import { useAuthContext } from '../../../context/useAuthContext';
 import { errorMessages, postInputParser, PostToEdit, useEditPostForm } from '../../../hooks/useEditPostForm';
 import { useError } from '../../../hooks/useError';
 import { Post } from '../../../types/types';
 import { handleError } from '../../../utils/errorHandling';
 import { Loading } from '../../loading/Loading';
 import { EditPost } from '../component/EditPost';
-import { useTheme } from '@mui/material';
 
 export const UpdatePost = () => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
+  const { user } = useAuthContext();
   const theme = useTheme();
   const { id } = useParams();
-  const userContext = useUserContext();
   const [currentPost, setCurrentPost] = useState<PostToEdit | null>(null);
   const [author, setAuthor] = useState<string | null>(null);
 
@@ -90,8 +90,8 @@ export const UpdatePost = () => {
   }, [postToUpload, shouldUploadImage, validatedInput]);
 
   const userIsAuthor = useMemo(() => {
-    return userContext?.user?.id === author;
-  }, [author, userContext]);
+    return user?.id === author;
+  }, [author, user]);
 
   useEffect(() => {
     if (currentPost && id && !userIsAuthor) {

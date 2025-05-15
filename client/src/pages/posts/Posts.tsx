@@ -1,5 +1,6 @@
 import { Box, FormControl, Grid2, InputLabel, MenuItem, Select, styled } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select/SelectInput';
+import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { useEffect, useState } from 'react';
@@ -17,6 +18,7 @@ const StyledMenuItem = styled(MenuItem)({
 });
 
 const initialSearch = {
+  title: '',
   author: '',
   summary: '',
 };
@@ -44,35 +46,24 @@ type OrderBy = Record<OrderByKey, OrderByType>;
 
 export const Posts = () => {
   const { enqueueSnackbar } = useSnackbar();
-  const [posts, setPosts] = useState<PostType[]>([]);
   const [postsToRender, setPostsToRender] = useState<PostType[]>([]);
-  const [noDataError, setNoDataError] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(initialSearch);
   const [orderBy, setOrderBy] = useState<OrderByKey>('dateDesc');
+  const {
+    data: posts,
+    error,
+    isLoading,
+  } = useQuery({
+    queryKey: ['posts'],
+    queryFn: async () => {
+      const response = await axios.get<PostType[]>(import.meta.env.VITE_POSTS_URL);
+      return response.data;
+    },
+  });
 
-  const getPosts = async (search?: typeof initialSearch) => {
-    const authorQueryParam = `${search?.author ? '?author=' + search.author : ''}`;
-    const summaryQueryParam = `${search?.summary ? 'summary=' + search.summary : ''}`;
-    try {
-      const posts = await axios.get<PostType[]>(
-        import.meta.env.VITE_POSTS_URL + authorQueryParam + summaryQueryParam
-      );
-      const data = posts.data;
-      if (data) {
-        setPosts(data);
-      }
-      setLoading(false);
-    } catch (error) {
-      setLoading(false);
-      setNoDataError(true);
-      handleError(error, enqueueSnackbar);
-    }
-  };
-
-  useEffect(() => {
-    getPosts();
-  }, []);
+  if (error) {
+    handleError(error, enqueueSnackbar);
+  }
 
   useEffect(() => {
     const filteredPosts = filterPosts();
@@ -81,8 +72,13 @@ export const Posts = () => {
   }, [posts, orderBy, search]);
 
   const filterPosts = () => {
-    return posts.filter(
-      (post) => post.author.userName.includes(search.author) && post.summary.includes(search.summary)
+    return (
+      posts?.filter(
+        (post) =>
+          post.title.toLowerCase().includes(search.title.toLowerCase()) &&
+          post.author.userName.toLowerCase().includes(search.author.toLowerCase()) &&
+          post.summary.toLowerCase().includes(search.summary.toLowerCase())
+      ) ?? []
     );
   };
 
@@ -106,7 +102,20 @@ export const Posts = () => {
 
   const SearchFields = (
     <Box width="100%" display="flex" justifyContent="center" gap="24px" marginTop="50px">
-      <SearchField variant="outlined" placeholder="Author" search={search} setSearch={setSearch} />
+      <SearchField
+        name="title"
+        variant="outlined"
+        placeholder="Title"
+        search={search}
+        setSearch={setSearch}
+      />
+      <SearchField
+        name="author"
+        variant="outlined"
+        placeholder="Author"
+        search={search}
+        setSearch={setSearch}
+      />
       <SearchField
         variant="outlined"
         name="summary"
@@ -134,15 +143,15 @@ export const Posts = () => {
     </Box>
   );
 
-  if (noDataError) {
+  if (error) {
     return <NoData title="Posts" />;
   }
-  if (loading) {
+  if (isLoading) {
     return <Loading title="Loading..." />;
   }
   return (
     <PageContainer padding="60px 0 0">
-      <PageHeader title="" customElement={SearchFields} padding="0 65px 0 50px" />
+      <PageHeader title="" customElement={SearchFields} padding="0 50px 0 50px" />
       <Grid2 width="100%" container spacing={1} overflow="auto" padding="0 40px">
         {postsToRender.map((post) => (
           <Post key={post.id} post={post} />

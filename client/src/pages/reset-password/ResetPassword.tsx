@@ -13,7 +13,7 @@ import { PageContainer } from '../../components/page/page-container/PageContaine
 import { PageHeader } from '../../components/page/page-header/PageHeader';
 import { routes } from '../../config/navigation/navigation';
 import { useError } from '../../hooks/useError';
-import { errorHasText, handleError } from '../../utils/errorHandling';
+import { errorContainsStrings, handleError } from '../../utils/errorHandling';
 import { PASSWORD_REGEX, userErrorMessages } from '../account-settings/form/utils';
 
 const resetPasswordParser = z
@@ -70,7 +70,7 @@ export const ResetPassword = () => {
       navigate(routes.login.route);
     } catch (error: unknown) {
       if (
-        errorHasText(error, [
+        errorContainsStrings(error, [
           'The reset password token has expired',
           'No reset token found',
           'Invalid reset token',

@@ -1,6 +1,7 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { Box, Tooltip } from '@mui/material';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { useEffect, useMemo, useState } from 'react';
@@ -18,73 +19,72 @@ import {
 } from '../../components/post/post-content/PostContent';
 import { PostImage } from '../../components/post/post-image/PostImage';
 import { routes } from '../../config/navigation/navigation';
-import { useUserContext } from '../../context/useUserContext';
-import { useToken } from '../../hooks/useToken';
 import { Post as IPost } from '../../types/types';
 import { handleError } from '../../utils/errorHandling';
 import { formatDate } from '../../utils/formatDate';
 import { Loading } from '../loading/Loading';
 import { NoData } from '../no-data/NoData';
 import { DeleteModal } from './delete-modal/DeleteModal';
+import { useAuthContext } from '../../context/useAuthContext';
 
 export const Post = () => {
   const { enqueueSnackbar } = useSnackbar();
-  const userContext = useUserContext();
+  const { accessToken, user } = useAuthContext();
   const navigate = useNavigate();
-  const { getAccessToken } = useToken();
   const { id } = useParams();
-  const [post, setPost] = useState<IPost | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [noDataError, setNoDataError] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const userIsAuthor = useMemo(
-    () => userContext?.user?.id === post?.author.id,
-    [userContext?.user, post?.author]
-  );
+  const {
+    data: post,
+    isLoading,
+    isError,
+    error: postError,
+  } = useQuery({
+    queryKey: ['post', id],
+    enabled: !!id,
+    queryFn: async () => {
+      const response = await axios.get<IPost>(`${import.meta.env.VITE_POSTS_URL}/${id}`);
+      return response.data;
+    },
+  });
 
-  const getPost = async () => {
-    try {
-      const post = await axios.get<IPost>(`${import.meta.env.VITE_POSTS_URL}/${id}`);
-      return post.data;
-    } catch (error: unknown) {
-      handleError(error, enqueueSnackbar);
-    }
-  };
-
-  useEffect(() => {
-    getPost().then((data) => {
-      if (data) {
-        setPost(data);
-      }
-      setLoading(false);
-    });
-  }, []);
-
-  const handleDelete = async () => {
-    try {
-      const accessToken = await getAccessToken();
+  const { mutateAsync: deletePost } = useMutation({
+    mutationFn: async () =>
       await axios.delete(`${import.meta.env.VITE_POSTS_URL}/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      });
+      }),
+    onSuccess: () => {
       enqueueSnackbar('Post successfully deleted', { variant: 'success', autoHideDuration: 3000 });
       navigate(routes.posts.route);
-    } catch (error) {
-      setNoDataError(true);
-      handleError(error, enqueueSnackbar);
+    },
+    onError: (error) => handleError(error, enqueueSnackbar),
+  });
+
+  const noDataError = useMemo(() => isError || !id, [isError, id]);
+
+  useEffect(() => {
+    if (postError) {
+      handleError(postError, enqueueSnackbar);
     }
-  };
+  }, [postError]);
+
+  const userIsAuthor = useMemo(() => user?.id === post?.author.id, [user, post?.author]);
 
   const handleEditClick = () => {
     navigate(`${routes.updatePost.baseRoute}/${id}`);
   };
 
+  const handleDelete = async () => {
+    console.log('Deleting....');
+    await deletePost();
+  };
+
   if (noDataError) {
     return <NoData title="Post" />;
   }
-  if (loading) {
+  if (isLoading) {
     return <Loading title="Loading..." />;
   }
 
@@ -124,7 +124,7 @@ export const Post = () => {
           </PostInformation>
           <PageHeader
             title={post?.title ?? 'Post not found'}
-            customElement={userContext?.user && userIsAuthor ? EditButtons : undefined}
+            customElement={user && userIsAuthor ? EditButtons : undefined}
             typographyProps={{ fontWeight: 600, fontSize: '30px' }}
             marginBottom="24px"
           />

@@ -6,8 +6,8 @@ import { ErrorMessage } from '../../../components/base/error-message/ErrorMessag
 import { FormContainer } from '../../../components/base/form-container/FormContainer';
 import { ButtonGroup, ButtonGroupProps } from '../../../components/button-group/ButtonGroup';
 import { routes } from '../../../config/navigation/navigation';
-import { useUserContext } from '../../../context/useUserContext';
 import { initialUserData, UserErrorMessages } from './utils';
+import { useAuthContext } from '../../../context/useAuthContext';
 
 export type UserData = {
   firstName: string;
@@ -42,17 +42,17 @@ export const UserForm = ({
   fullWidth = false,
 }: UserFormProps) => {
   const { pathname } = useLocation();
-  const userContext = useUserContext();
+  const { user } = useAuthContext();
 
   useEffect(() => {
-    if (userContext?.user) {
+    if (user) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { id, ...userData } = userContext.user;
+      const { id, ...userData } = user;
       setUserData({ ...userData, password: '', repeatPassword: '' });
     } else {
       setUserData(initialUserData);
     }
-  }, [userContext]);
+  }, [user]);
 
   const isSubmitDisabled = useMemo(() => !validatedInput.success, [validatedInput, userData]);
 

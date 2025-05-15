@@ -4,11 +4,11 @@ import { MouseEvent, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo_new_transp.png';
 import { routes } from '../../config/navigation/navigation';
-import { useUserContext } from '../../context/useUserContext';
 import { useLogout } from '../../hooks/useLogout';
 import { Button } from '../base/button/Button';
 import { Link } from '../base/link/Link';
 import { LoadingOverlay } from '../base/loading-overlay/LoadingOverlay';
+import { useAuthContext } from '../../context/useAuthContext';
 
 const Logo = styled('img')(({ theme }) => ({
   '&:hover': {
@@ -18,7 +18,7 @@ const Logo = styled('img')(({ theme }) => ({
 }));
 export const NavBar = () => {
   const navigate = useNavigate();
-  const userContext = useUserContext();
+  const { user } = useAuthContext();
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [loading, setLoading] = useState(false);
   const { logout } = useLogout();
@@ -45,7 +45,7 @@ export const NavBar = () => {
       display="flex"
       justifyContent="space-between"
       alignItems="center"
-      padding="0 65px 0 50px"
+      padding="0 50px 0 50px"
       zIndex={2}
       sx={{ background: 'white' }}
     >
@@ -59,7 +59,7 @@ export const NavBar = () => {
           <Button variant="outlined">{routes.addPost.name}</Button>
         </Link>
       </Box>
-      {!userContext?.user ? (
+      {!user ? (
         <Box display="flex" gap="12px">
           <Link to={routes.login.route} color="black" fontSize="14px">
             <Button>{routes.login.name}</Button>
@@ -79,7 +79,7 @@ export const NavBar = () => {
             sx={{ borderRadius: '30px', svg: { fontSize: '24px !important' } }}
             onClick={(event: MouseEvent<HTMLButtonElement>) => setMenuAnchor(event.currentTarget)}
           >
-            {userContext.user.firstName}
+            {user.firstName}
           </Button>
           <Menu open={isMenuOpen} anchorEl={menuAnchor} onClose={() => setMenuAnchor(null)}>
             <MenuItem onClick={handleAccountSettingsClick}> Account Settings</MenuItem>

@@ -25,6 +25,7 @@ export const useError = <U extends ZodRawShape>({ data, errorMessages, inputPars
     return validatedInput;
   }, [data]);
 
+
   useEffect(() => {
     const newError = handleZodSafeParseError(error, validatedInput);
     setError(newError);

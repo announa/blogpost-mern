@@ -40,6 +40,7 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
         sx={{ width: !(cancelRedirectUrl || onCancel) ? '100%' : 'unset', borderRadius: '30px' }}
         type={onConfirm ? 'button' : 'submit'}
         disabled={isSubmitDisabled}
+        onClick={onConfirm}
       >
         {submitButtonText}
       </Button>

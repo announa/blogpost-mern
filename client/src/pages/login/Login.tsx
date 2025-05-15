@@ -1,7 +1,6 @@
 import { Box, TextField, Typography, useTheme } from '@mui/material';
-import axios from 'axios';
 import { useSnackbar } from 'notistack';
-import { ChangeEvent, FormEvent, useMemo, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import validator from 'validator';
 import { z } from 'zod';
@@ -15,16 +14,9 @@ import { FormError } from '../../components/form-error/FormError';
 import { PageContainer } from '../../components/page/page-container/PageContainer';
 import { PageHeader } from '../../components/page/page-header/PageHeader';
 import { routes } from '../../config/navigation/navigation';
-import { User, useUserContext } from '../../context/useUserContext';
+import { useAuthContext } from '../../context/useAuthContext';
 import { useError } from '../../hooks/useError';
-import { StorageToken } from '../../hooks/useToken';
-import { errorHasText, handleError } from '../../utils/errorHandling';
-
-type LoginResult = {
-  accessToken: StorageToken;
-  refreshToken: StorageToken;
-  data: User;
-};
+import { errorContainsStrings, handleError } from '../../utils/errorHandling';
 
 const initialUserData = {
   email: '',
@@ -41,62 +33,44 @@ const loginInputParser = z.object({
   password: z.string().nonempty({ message: errorMessages.password }),
 });
 
+const LOGIN_CREDENTIALS_ERROR_MESSAGE = 'Incorrect user name or password';
+
 export const Login = () => {
   const theme = useTheme();
-  const userContext = useUserContext();
   const navigate = useNavigate();
+  const { login, loading, loginError } = useAuthContext();
   const { enqueueSnackbar } = useSnackbar();
-  const { state } = useLocation();
+  const { state, pathname } = useLocation();
   const [userData, setUserData] = useState(initialUserData);
-  const [loading, setLoading] = useState(false);
+  const [redirectUrl, setRedirectUrl] = useState('');
+  const [loginCredentialsError, setLoginCredentialsError] = useState(false);
   const { error, validatedInput, validateInput } = useError({
     data: userData,
     errorMessages,
     inputParser: loginInputParser,
   });
-  const [loginError, setLoginError] = useState('');
 
-  const redirectUrl = useMemo(() => state?.lastVisited ?? routes.posts.route, []);
+  useEffect(() => {
+    setRedirectUrl(state?.lastVisited ?? routes.posts.route);
+    setLoginCredentialsError(false);
+    navigate(pathname, { replace: true });
+  }, [state]);
+
+  useEffect(() => {
+    if (!loginError) return;
+    if (errorContainsStrings(loginError, [LOGIN_CREDENTIALS_ERROR_MESSAGE])) {
+      setLoginCredentialsError(true);
+    } else {
+      handleError(loginError, enqueueSnackbar);
+    }
+  }, [loginError, enqueueSnackbar]);
 
   const isSubmitDisabled = !validatedInput.success;
 
-  const handleAuthResponse = (accessToken: StorageToken, refreshToken: StorageToken, user: User) => {
-    if (!accessToken || !refreshToken) {
-      throw new Error('Login failed. Please try again later');
-    } else {
-      localStorage.setItem('accessToken', JSON.stringify(accessToken));
-      localStorage.setItem('refreshToken', JSON.stringify(refreshToken));
-      userContext?.setUser(user);
-      userContext?.setRefreshTokenExpiration(refreshToken.expiration);
-    }
-  };
-
-  const handleLogin = async (event: FormEvent) => {
+  const handleLogin = (event: FormEvent) => {
     event.preventDefault();
-    setLoading(true);
-    try {
-      const result = await axios.post<LoginResult>(
-        `${import.meta.env.VITE_AUTH_URL}${routes.login.route}`,
-        validatedInput.data,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      const accessToken = result.data.accessToken;
-      const refreshToken = result.data.refreshToken;
-      const user = result.data.data;
-      handleAuthResponse(accessToken, refreshToken, user);
-      navigate(redirectUrl);
-    } catch (error: unknown) {
-      const errorMessage = 'Incorrect user name or password';
-      if (errorHasText(error, [errorMessage])) {
-        setLoginError(errorMessage);
-      } else {
-        handleError(error, enqueueSnackbar);
-      }
-      setLoading(false);
+    if (validatedInput.data) {
+      login(validatedInput.data, redirectUrl);
     }
   };
 
@@ -113,7 +87,7 @@ export const Login = () => {
       <PaperCard maxWidth="450px" background="#efefef" cardProps={{ padding: '50px' }}>
         <PageHeader title="Login" textAlign="center" typographyProps={{ width: '100%' }} />
         <FormContainer onSubmit={handleLogin}>
-          {loginError && <ErrorMessage>{loginError}</ErrorMessage>}
+          {loginCredentialsError && <ErrorMessage>{LOGIN_CREDENTIALS_ERROR_MESSAGE}</ErrorMessage>}
           <div>
             <TextField
               name="email"

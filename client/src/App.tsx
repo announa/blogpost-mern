@@ -1,20 +1,25 @@
 import { ThemeProvider } from '@mui/material';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SnackbarProvider } from 'notistack';
 import { BrowserRouter } from 'react-router-dom';
-import { UserContextProvider } from './context/UserContextProvider';
 import { Main } from './Main';
 import { theme } from './style/theme';
+import { AuthProvider } from './context/AuthContextProvider';
+
+const client = new QueryClient();
 
 export const App = () => {
   return (
     <ThemeProvider theme={theme}>
-      <UserContextProvider>
+      <QueryClientProvider client={client}>
         <SnackbarProvider>
           <BrowserRouter>
-            <Main />
+            <AuthProvider>
+              <Main />
+            </AuthProvider>
           </BrowserRouter>
         </SnackbarProvider>
-      </UserContextProvider>
+      </QueryClientProvider>
     </ThemeProvider>
   );
 };

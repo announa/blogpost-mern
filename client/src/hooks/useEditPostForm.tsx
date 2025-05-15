@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { routes } from '../config/navigation/navigation';
 import { handleError } from '../utils/errorHandling';
-import { useToken } from './useToken';
+import { useAuthContext } from '../context/useAuthContext';
 
 export const initialPost = {
   title: '',
@@ -37,7 +37,7 @@ type PostKey = keyof PostToEdit;
 export const useEditPostForm = () => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-  const { getAccessToken } = useToken();
+  const { accessToken } = useAuthContext();
   const [postToUpload, setPostToUpload] = useState(initialPost);
   const [newImage, setNewImage] = useState<File | null | undefined>(undefined);
   const [currentImage, setCurrentImage] = useState<string | null>(null);
@@ -74,13 +74,13 @@ export const useEditPostForm = () => {
 
   const updatePost = async (formData: FormData, id?: string) => {
     try {
-      const accessToken = await getAccessToken();
+      // const accessToken = await getAccessToken();
       if (!accessToken) {
         enqueueSnackbar('Unauthorized', { variant: 'error' });
         navigate(routes.login.route, { state: { lastVisited: window.location.href } });
       } else {
-        const url =import.meta.env.VITE_POSTS_URL + ( id ? `/${id}` : '');
-        const fetchMethod = id ? axios.put : axios.post
+        const url = import.meta.env.VITE_POSTS_URL + (id ? `/${id}` : '');
+        const fetchMethod = id ? axios.put : axios.post;
         const result = await fetchMethod(url, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',

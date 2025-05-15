@@ -1,20 +1,18 @@
 import { styled } from '@mui/material';
-import { useEffect, useRef } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { LoadingOverlay } from './components/base/loading-overlay/LoadingOverlay';
 import { PaperCard } from './components/base/paper-card/PaperCard';
 import { NavBar } from './components/nav/NavBar';
 import { routes } from './config/navigation/navigation';
-import { useUserContext } from './context/useUserContext';
-import { useToken } from './hooks/useToken';
+import { useAuthContext } from './context/useAuthContext';
 import { AccountSettings } from './pages/account-settings/AccountSettings';
 import { AddPost } from './pages/edit-post/add-post/AddPost';
 import { UpdatePost } from './pages/edit-post/update-post/UpdatePost';
+import { ForgotPassword } from './pages/forgot-password/ForgotPassword';
 import { Login } from './pages/login/Login';
 import { Post } from './pages/post/Post';
 import { Posts } from './pages/posts/Posts';
 import { Register } from './pages/register/Register';
-import { ForgotPassword } from './pages/forgot-password/ForgotPassword';
 import { ResetPassword } from './pages/reset-password/ResetPassword';
 
 const MainContainer = styled('div')({
@@ -35,36 +33,20 @@ const MainContainer = styled('div')({
 });
 
 export const Main = () => {
-  const userContext = useUserContext();
-  const { getAccessToken } = useToken();
-  const timeoutId = useRef<NodeJS.Timeout | undefined>(undefined);
-
-  const verifyUserIsLoggedIn = () => {
-    clearTimeout(timeoutId.current);
-    if (userContext?.refreshTokenExpiration) {
-      const newTimeout = userContext?.refreshTokenExpiration - Date.now();
-      timeoutId.current = setTimeout(async () => {
-        await getAccessToken();
-      }, newTimeout);
-    }
-  };
-
-  useEffect(() => {
-    verifyUserIsLoggedIn();
-  }, [userContext?.refreshTokenExpiration]);
+  const { user, loading } = useAuthContext();
 
   return (
     <MainContainer>
       <PaperCard flex={1}>
         <NavBar />
-        {userContext?.loading ? (
+        {loading ? (
           <LoadingOverlay open={true} />
         ) : (
           <Routes>
             <Route
               path={routes.addPost.route}
               element={
-                userContext?.user ? (
+                user ? (
                   <AddPost />
                 ) : (
                   <Navigate to={routes.login.route} state={{ lastVisited: routes.addPost.route }} replace />
@@ -77,21 +59,22 @@ export const Main = () => {
             />
             <Route path={routes.posts.route} element={<Posts />} />
             <Route path={routes.post.route} element={<Post />} />
+            <Route path={routes.post.baseRoute} element={<Navigate to={routes.posts.route} />} />
             <Route
               path={routes.updatePost.route}
-              element={userContext?.user ? <UpdatePost /> : <Navigate to={routes.posts.route} replace />}
+              element={user ? <UpdatePost /> : <Navigate to={routes.posts.route} replace />}
             />
             <Route
               path={routes.login.route}
-              element={!userContext?.user ? <Login /> : <Navigate to={routes.posts.route} replace />}
+              element={!user ? <Login /> : <Navigate to={routes.posts.route} replace />}
             />
             <Route
               path={routes.register.route}
-              element={!userContext?.user ? <Register /> : <Navigate to={routes.posts.route} replace />}
+              element={!user ? <Register /> : <Navigate to={routes.posts.route} replace />}
             />
             <Route
               path={routes.account.route}
-              element={userContext?.user ? <AccountSettings /> : <Navigate to={routes.login.route} replace />}
+              element={user ? <AccountSettings /> : <Navigate to={routes.login.route} replace />}
             />
             <Route path={routes.forgotPassword.route} element={<ForgotPassword />} />
             <Route path={routes.resetPassword.route} element={<ResetPassword />} />

@@ -8,9 +8,8 @@ import validator from 'validator';
 import { z } from 'zod';
 import { PageContainer } from '../../components/page/page-container/PageContainer';
 import { PageHeader } from '../../components/page/page-header/PageHeader';
-import { useUserContext } from '../../context/useUserContext';
+import { useAuthContext } from '../../context/useAuthContext';
 import { useError } from '../../hooks/useError';
-import { useToken } from '../../hooks/useToken';
 import { handleError } from '../../utils/errorHandling';
 import { UserData, UserForm } from './form/UserForm';
 import { initialUserData, PASSWORD_REGEX, userErrorMessages } from './form/utils';
@@ -37,9 +36,8 @@ const userInputParser = z
   });
 
 export const AccountSettings = () => {
-  const userContext = useUserContext();
   const { enqueueSnackbar } = useSnackbar();
-  const { getAccessToken } = useToken();
+  const { accessToken, user, setUser } = useAuthContext();
   const [userData, setUserData] = useState(initialUserData);
   const [editMode, setEditMode] = useState(false);
   const { error, validateInput, validatedInput } = useError({
@@ -49,32 +47,32 @@ export const AccountSettings = () => {
   });
 
   useEffect(() => {
-    if (userContext?.user) {
+    if (user) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { id, ...userData } = userContext.user;
+      const { id, ...userData } = user;
       setUserData({ ...userData, password: '', repeatPassword: '' });
     }
-  }, [userContext]);
+  }, [user]);
 
   const isSubmitDisabled = useMemo(() => {
-    if (userContext?.user) {
+    if (user) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { id, ...user } = { ...userContext.user, password: '', repeatPassword: '' };
-      return !validatedInput.success || isEqual(user, userData);
+      const { id, ...userCopy } = { ...user, password: '', repeatPassword: '' };
+      return !validatedInput.success || isEqual(userCopy, userData);
     } else {
       return true;
     }
-  }, [validatedInput, userContext, userData]);
+  }, [validatedInput, user, userData]);
 
   const createFormData = () => {
     const formData = new FormData();
-    if (userContext?.user) {
+    if (user) {
       for (const key in userData) {
         const userDataKey = key as keyof UserData;
         if (
           userDataKey !== 'password' &&
           userDataKey !== 'repeatPassword' &&
-          userData[userDataKey] !== userContext?.user[userDataKey]
+          userData[userDataKey] !== user[userDataKey]
         ) {
           formData.append(userDataKey, String(userData[userDataKey]));
         }
@@ -90,13 +88,12 @@ export const AccountSettings = () => {
   const handleUpdateUser = async (event: FormEvent) => {
     event.preventDefault();
     try {
-      const accessToken = await getAccessToken();
       const formData = createFormData();
       if (!formData) {
         handleError(new Error('Nothing to update'), enqueueSnackbar);
         return;
       }
-      const result = await axios.put(`${import.meta.env.VITE_USER_URL}/${userContext?.user?.id}`, formData, {
+      const result = await axios.put(`${import.meta.env.VITE_USER_URL}/${user?.id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${accessToken}`,
@@ -104,7 +101,7 @@ export const AccountSettings = () => {
       });
       enqueueSnackbar('User data successfully updated', { variant: 'success', autoHideDuration: 3000 });
       setEditMode(false);
-      userContext?.setUser(result.data);
+      setUser(result.data);
     } catch (error: unknown) {
       handleError(error, enqueueSnackbar);
     }

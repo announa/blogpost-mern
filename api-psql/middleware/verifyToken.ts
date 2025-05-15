@@ -13,6 +13,8 @@ declare global {
   }
 }
 
+type TestArr = (number|string)[]
+
 const verifyJwt = (token: string, publicKey: string) => {
   try {
     const verified = verify(token, publicKey) as JwtPayload;

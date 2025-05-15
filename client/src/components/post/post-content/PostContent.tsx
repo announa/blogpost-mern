@@ -1,6 +1,6 @@
 import { styled } from '@mui/material';
 
-export const PostInformation = styled('p')({
+export const PostInformation = styled('div')({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
