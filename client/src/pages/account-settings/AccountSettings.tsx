@@ -13,6 +13,8 @@ import { useError } from '../../hooks/useError';
 import { handleError } from '../../utils/errorHandling';
 import { UserData, UserForm } from './form/UserForm';
 import { initialUserData, PASSWORD_REGEX, userErrorMessages } from './form/utils';
+import { useMutation } from '@tanstack/react-query';
+import { User } from '../../context/AuthContextProvider';
 
 const userInputParser = z
   .object({
@@ -44,6 +46,24 @@ export const AccountSettings = () => {
     data: userData,
     errorMessages: userErrorMessages,
     inputParser: userInputParser,
+  });
+  const { mutateAsync: updateUser } = useMutation({
+    mutationKey: ['updateUser'],
+    mutationFn: async (formData: FormData | null) => {
+      const result = await axios.put<User>(`${import.meta.env.VITE_USER_URL}/${user?.id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      return result.data;
+    },
+    onSuccess: (data) => {
+      enqueueSnackbar('User data successfully updated', { variant: 'success', autoHideDuration: 3000 });
+      setEditMode(false);
+      setUser(data);
+    },
+    onError: (error) => handleError(error, enqueueSnackbar),
   });
 
   useEffect(() => {
@@ -87,24 +107,12 @@ export const AccountSettings = () => {
 
   const handleUpdateUser = async (event: FormEvent) => {
     event.preventDefault();
-    try {
-      const formData = createFormData();
-      if (!formData) {
-        handleError(new Error('Nothing to update'), enqueueSnackbar);
-        return;
-      }
-      const result = await axios.put(`${import.meta.env.VITE_USER_URL}/${user?.id}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      enqueueSnackbar('User data successfully updated', { variant: 'success', autoHideDuration: 3000 });
-      setEditMode(false);
-      setUser(result.data);
-    } catch (error: unknown) {
-      handleError(error, enqueueSnackbar);
+    const formData = createFormData();
+    if (!formData) {
+      handleError(new Error('Nothing to update'), enqueueSnackbar);
+      return;
     }
+    updateUser(formData);
   };
 
   const EditFormButton = (

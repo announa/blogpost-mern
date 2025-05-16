@@ -1,12 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
 import { enqueueSnackbar } from 'notistack';
-import { createContext, Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../config/navigation/navigation';
 import { useAuthRequests } from '../hooks/useAuthRequests';
 import { StorageToken, useLocalStorage } from '../hooks/useLocalStorage';
 import { handleError } from '../utils/errorHandling';
+import { AuthContext } from './useAuthContext';
 
 export type AuthContextType = {
   accessToken: string | null;
@@ -14,11 +13,11 @@ export type AuthContextType = {
   loginError: Error | null;
   loading: boolean;
   user: User | null;
-  setUser: Dispatch<SetStateAction<User | null>>
+  setUser: Dispatch<SetStateAction<User | null>>;
   // logout: () => void;
 };
 
-type LoginResult = {
+export type LoginResult = {
   accessToken: StorageToken;
   refreshToken: StorageToken;
   data: User;
@@ -37,15 +36,13 @@ export type User = {
   email: string;
 };
 
-export const AuthContext = createContext<AuthContextType | null>(null);
-
 export interface AuthContextProviderProps {
   children: JSX.Element;
 }
 
 export const AuthProvider = ({ children }: AuthContextProviderProps) => {
   const navigate = useNavigate();
-  const { loginMutation, loginError, loadingLogin, getAccessToken } = useAuthRequests();
+  const { loginMutation, loginError, loadingLogin, getAccessToken, useUserQuery } = useAuthRequests();
   const { getTokenFromLocalStorage } = useLocalStorage();
   const [loginRedirectUrl, setLoginRedirectUrl] = useState(routes.posts.route);
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -56,27 +53,11 @@ export const AuthProvider = ({ children }: AuthContextProviderProps) => {
     () => getTokenFromLocalStorage('refreshToken')?.expiration || null
   );
 
+  const { data: userData, error: userDataError, isLoading: loadingUserData } = useUserQuery(accessToken);
+
   useEffect(() => {
     getAccessToken().then((token) => setAccessToken(token?.token || null));
   }, []);
-
-  const {
-    data: userData,
-    error: userDataError,
-    isLoading: loadingUserData,
-  } = useQuery({
-    queryKey: ['user', accessToken],
-    queryFn: async () => {
-      const result = await axios.get<User>(import.meta.env.VITE_USER_URL, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      const userData = result.data ?? null;
-      return userData;
-    },
-    enabled: !!accessToken,
-  });
 
   useEffect(() => {
     if (userData) {
@@ -134,7 +115,7 @@ export const AuthProvider = ({ children }: AuthContextProviderProps) => {
         loginError,
         loading: loadingLogin && loadingUserData,
         user,
-        setUser
+        setUser,
       }}
     >
       {children}
