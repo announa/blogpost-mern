@@ -4,11 +4,10 @@ import { MouseEvent, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo_new_transp.png';
 import { routes } from '../../config/navigation/navigation';
-import { useLogout } from '../../hooks/useLogout';
+import { useAuthContext } from '../../context/useAuthContext';
 import { Button } from '../base/button/Button';
 import { Link } from '../base/link/Link';
 import { LoadingOverlay } from '../base/loading-overlay/LoadingOverlay';
-import { useAuthContext } from '../../context/useAuthContext';
 
 const Logo = styled('img')(({ theme }) => ({
   '&:hover': {
@@ -20,13 +19,11 @@ export const NavBar = () => {
   const navigate = useNavigate();
   const { user } = useAuthContext();
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
-  const [loading, setLoading] = useState(false);
-  const { logout } = useLogout();
+  const { logout, loading } = useAuthContext();
 
   const handleLogout = async () => {
-    setLoading(true);
     setMenuAnchor(null);
-    await logout(() => setLoading(false));
+    await logout();
   };
   const isMenuOpen = useMemo(() => !!menuAnchor, [menuAnchor]);
 

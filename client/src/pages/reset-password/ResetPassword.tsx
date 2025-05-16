@@ -1,8 +1,7 @@
 import { TextField } from '@mui/material';
-import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { FormEvent, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { z } from 'zod';
 import { ErrorMessage } from '../../components/base/error-message/ErrorMessage';
 import { FormContainer } from '../../components/base/form-container/FormContainer';
@@ -12,6 +11,7 @@ import { ButtonGroup } from '../../components/button-group/ButtonGroup';
 import { PageContainer } from '../../components/page/page-container/PageContainer';
 import { PageHeader } from '../../components/page/page-header/PageHeader';
 import { routes } from '../../config/navigation/navigation';
+import { useAuthContext } from '../../context/useAuthContext';
 import { useError } from '../../hooks/useError';
 import { errorContainsStrings, handleError } from '../../utils/errorHandling';
 import { PASSWORD_REGEX, userErrorMessages } from '../account-settings/form/utils';
@@ -46,10 +46,9 @@ const errorMessages = {
 
 export const ResetPassword = () => {
   const { token, id: userId } = useParams();
+  const { resetPassword, loading } = useAuthContext();
   const { enqueueSnackbar } = useSnackbar();
-  const navigate = useNavigate();
   const [passwordData, setPasswordData] = useState(initialData);
-  const [loading, setLoading] = useState(false);
   const { error, validateInput, validatedInput } = useError({
     data: passwordData,
     errorMessages,
@@ -59,35 +58,38 @@ export const ResetPassword = () => {
 
   const handleResetPassword = async (event: FormEvent) => {
     event.preventDefault();
-    try {
-      setLoading(true);
-      await axios.put(`${import.meta.env.VITE_AUTH_URL}/reset-password`, {
-        password: passwordData.password,
-        token: token,
-        userId: userId,
-      });
-      enqueueSnackbar('Successfully updated password', { variant: 'success' });
-      navigate(routes.login.route);
-    } catch (error: unknown) {
-      if (
-        errorContainsStrings(error, [
-          'The reset password token has expired',
-          'No reset token found',
-          'Invalid reset token',
-        ])
-      ) {
-        handleError(error, enqueueSnackbar, 'The reset password link is invalid. Please request a new link');
-      } else {
-        handleError(error, enqueueSnackbar);
-      }
+    if (!token || !passwordData.password || !userId) {
+      return;
     }
-    setLoading(false);
+
+    resetPassword({
+      password: passwordData.password,
+      token,
+      userId,
+      onError: () => {
+        if (
+          errorContainsStrings(error, [
+            'The reset password token has expired',
+            'No reset token found',
+            'Invalid reset token',
+          ])
+        ) {
+          handleError(
+            error,
+            enqueueSnackbar,
+            'The reset password link is invalid. Please request a new link'
+          );
+        } else {
+          handleError(error, enqueueSnackbar);
+        }
+      },
+    });
   };
 
   return (
     <PageContainer>
-      <PaperCard maxWidth="500px" maxHeight="unset" marginBottom="50px">
-        <PageHeader title="Reset Password" />
+      <PaperCard maxWidth="450px" background="#efefef" cardProps={{ padding: '50px' }}>
+      <PageHeader title="Reset Password" />
         <FormContainer onSubmit={handleResetPassword}>
           <TextField
             name="password"
@@ -98,6 +100,7 @@ export const ResetPassword = () => {
             onBlur={() => validateInput('password')}
             value={passwordData.password}
             onChange={(event) => setPasswordData({ ...passwordData, password: event.target.value })}
+            slotProps={{ input: { sx: { background: 'white' } } }}
             error={!!error.password}
           />
           {error.password && <ErrorMessage>{error.password}</ErrorMessage>}
@@ -110,6 +113,7 @@ export const ResetPassword = () => {
             onBlur={() => validateInput('repeatPassword')}
             value={passwordData.repeatPassword}
             onChange={(event) => setPasswordData({ ...passwordData, repeatPassword: event.target.value })}
+            slotProps={{ input: { sx: { background: 'white' } } }}
             error={!!error.repeatPassword}
           />
           {error.repeatPassword && <ErrorMessage>{error.repeatPassword}</ErrorMessage>}

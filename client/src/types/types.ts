@@ -18,3 +18,13 @@ export type Post = {
     data: string;
   } | null;
 };
+
+export type UpdatePostResult = {
+    id: number;
+    title: string;
+    summary: string;
+    content: string;
+    author: number;
+    image: number | null;
+    created_at: string;
+  };

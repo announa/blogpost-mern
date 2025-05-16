@@ -73,8 +73,13 @@ export const register = async (req: Request, res: Response) => {
     }
     console.log('Successfully created new user');
     res.status(200).json(newUser);
-  } catch (error) {
-    handleError(error, res);
+  } catch (error: any) {
+    if ((error.message as string).includes('duplicate key value violates unique constraint "unique_')) {
+      const identifier = (error.message as string).split('unique_')[1].replace('"', '');
+      res.status(400).json({ error: { message: `${identifier} already exists` } });
+    } else {
+      handleError(error, res);
+    }
   }
 };
 
@@ -86,7 +91,7 @@ export const requestResetPassword = async (req: Request, res: Response) => {
       throw new HTTPError('No email provided', 400);
     }
     const response = await pool.query<{ id: string; email: string }>(
-      'SELECT id, email FROM user WHERE email = $1',
+      'SELECT id, email FROM users WHERE email = $1',
       [email]
     );
     const user = response.rows[0];
@@ -95,6 +100,7 @@ export const requestResetPassword = async (req: Request, res: Response) => {
       res.status(200).send('A password reset link has been sent to the provided email if this email exists');
       return;
     }
+    console.log('generating reset token...')
     const resetToken = crypto.randomBytes(32).toString('hex');
     await storeResetToken(resetToken, user.id);
     const content = generateResetEmailContent(resetToken, user.id);
@@ -124,8 +130,9 @@ export const resetPassword = async (req: Request, res: Response) => {
     }
     await verifyResetPasswordToken(token, dbToken.token, dbToken.updated_at);
     const hashedPassword = await bcrypt.hash(parsedPassword, 10);
+    console.log('setting new password...')
     const userResponse = await pool.query<{ id: string }>(
-      `UPDATE user SET password = $2 WHERE id = $1 RETURNING id`,
+      `UPDATE users SET password = $2 WHERE id = $1 RETURNING id`,
       [userId, hashedPassword]
     );
     const updatedUser = userResponse.rows[0];

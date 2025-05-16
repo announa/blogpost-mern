@@ -1,11 +1,13 @@
+import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { ChangeEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { routes } from '../config/navigation/navigation';
-import { handleError } from '../utils/errorHandling';
 import { useAuthContext } from '../context/useAuthContext';
+import { UpdatePostResult } from '../types/types';
+import { handleError } from '../utils/errorHandling';
 
 export const initialPost = {
   title: '',
@@ -33,6 +35,7 @@ export const postInputParser = z.object({
 
 export type PostToEdit = typeof initialPost;
 type PostKey = keyof PostToEdit;
+type UpdatePostMutationParams = { url: string; formData: FormData; accessToken: string };
 
 export const useEditPostForm = () => {
   const navigate = useNavigate();
@@ -42,6 +45,42 @@ export const useEditPostForm = () => {
   const [newImage, setNewImage] = useState<File | null | undefined>(undefined);
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const showSuccessSnackbar = (message: string) =>
+    enqueueSnackbar(message, {
+      variant: 'success',
+      autoHideDuration: 3000,
+    });
+
+  const { mutateAsync: addPostMutation } = useMutation({
+    mutationKey: ['updatePostMutation'],
+    mutationFn: async ({ url, formData, accessToken }: UpdatePostMutationParams) => {
+      const result = await axios.post<UpdatePostResult>(url, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      return result.data.id.toString();
+    },
+    onSuccess: () => showSuccessSnackbar('Post successfully added'),
+    onError: (error) => handleError(error, enqueueSnackbar),
+  });
+
+  const { mutateAsync: updatePostMutation } = useMutation({
+    mutationKey: ['updatePostMutation'],
+    mutationFn: async ({ url, formData, accessToken }: UpdatePostMutationParams) => {
+      const result = await axios.put<UpdatePostResult>(url, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      return result.data.id.toString();
+    },
+    onSuccess: () => showSuccessSnackbar('Post successfully updated'),
+    onError: (error) => handleError(error, enqueueSnackbar),
+  });
 
   const uploadImage = (event: ChangeEvent<HTMLInputElement>) => {
     const image = event.target.files?.[0];
@@ -73,28 +112,13 @@ export const useEditPostForm = () => {
   const createPost = (formData: FormData) => updatePost(formData);
 
   const updatePost = async (formData: FormData, id?: string) => {
-    try {
-      // const accessToken = await getAccessToken();
-      if (!accessToken) {
-        enqueueSnackbar('Unauthorized', { variant: 'error' });
-        navigate(routes.login.route, { state: { lastVisited: window.location.href } });
-      } else {
-        const url = import.meta.env.VITE_POSTS_URL + (id ? `/${id}` : '');
-        const fetchMethod = id ? axios.put : axios.post;
-        const result = await fetchMethod(url, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-        enqueueSnackbar(id ? 'Post successfully updated' : 'Post successfully added', {
-          variant: 'success',
-          autoHideDuration: 3000,
-        });
-        return result.data.id as string;
-      }
-    } catch (error: unknown) {
-      handleError(error, enqueueSnackbar, 'Post could not be updated');
+    if (!accessToken) {
+      enqueueSnackbar('Unauthorized', { variant: 'error' });
+      navigate(routes.login.route, { state: { lastVisited: window.location.href } });
+    } else {
+      const url = import.meta.env.VITE_POSTS_URL + (id ? `/${id}` : '');
+      const requestParams = { url, formData, accessToken };
+      return id ? await updatePostMutation(requestParams) : await addPostMutation(requestParams);
     }
   };
 

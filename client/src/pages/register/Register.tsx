@@ -1,8 +1,5 @@
 import { Typography, useTheme } from '@mui/material';
-import axios from 'axios';
-import { useSnackbar } from 'notistack';
 import { FormEvent, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import validator from 'validator';
 import { z } from 'zod';
 import { Link } from '../../components/base/link/Link';
@@ -11,8 +8,8 @@ import { PaperCard } from '../../components/base/paper-card/PaperCard';
 import { PageContainer } from '../../components/page/page-container/PageContainer';
 import { PageHeader } from '../../components/page/page-header/PageHeader';
 import { routes } from '../../config/navigation/navigation';
+import { useAuthContext } from '../../context/useAuthContext';
 import { useError } from '../../hooks/useError';
-import { handleError } from '../../utils/errorHandling';
 import { UserData, UserForm } from '../account-settings/form/UserForm';
 import { initialUserData, PASSWORD_REGEX, userErrorMessages } from '../account-settings/form/utils';
 
@@ -38,12 +35,12 @@ const userInputParser = z
     }
   });
 
+export type RegisterUserData = Omit<UserData, 'repeatPassword'>;
+
 export const Register = () => {
   const theme = useTheme();
-  const { enqueueSnackbar } = useSnackbar();
-  const navigate = useNavigate();
+  const { registerUser, loading } = useAuthContext();
   const [userData, setUserData] = useState<UserData>(initialUserData);
-  const [loading, setLoading] = useState(false);
   const { error, validateInput, validatedInput } = useError({
     data: userData,
     errorMessages: userErrorMessages,
@@ -52,26 +49,20 @@ export const Register = () => {
 
   const handleRegistration = async (event: FormEvent, userData: UserData) => {
     event.preventDefault();
-    try {
-      setLoading(true);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { repeatPassword, ...data } = userData;
-      await axios.post(`${import.meta.env.VITE_AUTH_URL}${routes.register.route}`, data, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      enqueueSnackbar('User successfully registered', { variant: 'success', autoHideDuration: 3000 });
-      navigate(routes.login.route);
-    } catch (error: unknown) {
-      handleError(error, enqueueSnackbar);
-    }
-    setLoading(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { repeatPassword, ...data } = userData;
+    await registerUser(userData);
   };
 
   return (
     <PageContainer>
-      <PaperCard maxWidth="500px" maxHeight="unset" marginBottom="50px" background="#efefef" cardProps={{ padding: '50px' }}>
+      <PaperCard
+        maxWidth="500px"
+        maxHeight="unset"
+        marginBottom="50px"
+        background="#efefef"
+        cardProps={{ padding: '50px' }}
+      >
         <PageHeader title="Register" textAlign="center" typographyProps={{ width: '100%' }} />
         <UserForm
           fullWidth

@@ -67,10 +67,10 @@ export const Login = () => {
 
   const isSubmitDisabled = !validatedInput.success;
 
-  const handleLogin = (event: FormEvent) => {
+  const handleLogin = async (event: FormEvent) => {
     event.preventDefault();
     if (validatedInput.data) {
-      login(validatedInput.data, redirectUrl);
+      await login(validatedInput.data, redirectUrl);
     }
   };
 

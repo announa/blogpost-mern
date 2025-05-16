@@ -1,8 +1,5 @@
 import { Box, TextField, Typography } from '@mui/material';
-import axios from 'axios';
-import { useSnackbar } from 'notistack';
 import { FormEvent, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import validator from 'validator';
 import { z } from 'zod';
 import { ErrorMessage } from '../../components/base/error-message/ErrorMessage';
@@ -13,8 +10,8 @@ import { ButtonGroup } from '../../components/button-group/ButtonGroup';
 import { PageContainer } from '../../components/page/page-container/PageContainer';
 import { PageHeader } from '../../components/page/page-header/PageHeader';
 import { routes } from '../../config/navigation/navigation';
+import { useAuthContext } from '../../context/useAuthContext';
 import { useError } from '../../hooks/useError';
-import { handleError } from '../../utils/errorHandling';
 
 const forgotPasswordParser = z.object({
   email: z.string().refine((value) => validator.isEmail(value)),
@@ -23,10 +20,8 @@ const forgotPasswordParser = z.object({
 const errorMessages = { email: 'A valid email address is required' };
 
 export const ForgotPassword = () => {
-  const { enqueueSnackbar } = useSnackbar();
-  const navigate = useNavigate();
+  const { forgotPassword, loading } = useAuthContext();
   const [data, setData] = useState({ email: '' });
-  const [loading, setLoading] = useState(false);
   const { error, validateInput, validatedInput } = useError({
     data: data,
     errorMessages,
@@ -36,20 +31,13 @@ export const ForgotPassword = () => {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    try {
-      setLoading(true);
-      await axios.post(`${import.meta.env.VITE_AUTH_URL}/request-reset-password`, data);
-      enqueueSnackbar('Email successfully sent', { variant: 'success' });
-      navigate(routes.login.route);
-    } catch (error) {
-      handleError(error, enqueueSnackbar);
-    }
-    setLoading(false);
+    await forgotPassword(data);
   };
+
   return (
     <PageContainer>
-      <PaperCard maxWidth="500px" maxHeight="unset" marginBottom="50px">
-        <Box>
+      <PaperCard maxWidth="450px" background="#efefef" cardProps={{ padding: '50px' }}>
+      <Box>
           <PageHeader title="Forgot Password" textAlign="center" marginBottom="24px" />
           <Typography variant="body2">
             Please enter your registered email address. A link for resetting your password will be sent to
@@ -66,6 +54,7 @@ export const ForgotPassword = () => {
             onBlur={() => validateInput('email')}
             value={data.email}
             onChange={(event) => setData({ email: event.target.value })}
+            slotProps={{ input: { sx: { background: 'white' } } }}
             error={!!error.email}
           />
           {error.email && <ErrorMessage>{error.email}</ErrorMessage>}
