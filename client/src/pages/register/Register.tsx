@@ -51,7 +51,7 @@ export const Register = () => {
     event.preventDefault();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { repeatPassword, ...data } = userData;
-    await registerUser(userData);
+    await registerUser(data);
   };
 
   return (

@@ -1,5 +1,5 @@
 import AccountCircleOutlinedIcon from '@mui/icons-material/Person';
-import { Box, Menu, MenuItem, styled } from '@mui/material';
+import { Box, Divider, Menu, MenuItem, styled } from '@mui/material';
 import { MouseEvent, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo_new_transp.png';
@@ -15,6 +15,11 @@ const Logo = styled('img')(({ theme }) => ({
   },
   transition: 'filter 250ms cubic-bezier(0.4, 0, 0.2, 1)',
 }));
+
+const AccountMenuItem = styled(MenuItem)({
+  fontSize: '14px',
+});
+
 export const NavBar = () => {
   const navigate = useNavigate();
   const { user } = useAuthContext();
@@ -78,9 +83,31 @@ export const NavBar = () => {
           >
             {user.firstName}
           </Button>
-          <Menu open={isMenuOpen} anchorEl={menuAnchor} onClose={() => setMenuAnchor(null)}>
-            <MenuItem onClick={handleAccountSettingsClick}> Account Settings</MenuItem>
-            <MenuItem onClick={handleLogout}> Logout</MenuItem>
+          <Menu
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            open={isMenuOpen}
+            anchorEl={menuAnchor}
+            onClose={() => setMenuAnchor(null)}
+            sx={{ '& .Mui-disabled': { opacity: 1 } }}
+          >
+            <AccountMenuItem disabled sx={{ fontStyle: 'italic' }}>
+              {' '}
+              {user.firstName} {user.lastName}{' '}
+            </AccountMenuItem>
+            <AccountMenuItem disabled sx={{ fontStyle: 'italic' }}>
+              {' '}
+              {user.userName}{' '}
+            </AccountMenuItem>
+            <Divider />
+            <AccountMenuItem onClick={handleAccountSettingsClick}> Account Settings</AccountMenuItem>
+            <AccountMenuItem onClick={handleLogout}> Logout</AccountMenuItem>
           </Menu>
         </Box>
       )}

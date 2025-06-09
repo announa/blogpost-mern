@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction } from 'react';
 import ReactQuill from 'react-quill';
 import { initialPost, PostToEdit } from '../../hooks/useEditPostForm';
 
@@ -43,22 +43,13 @@ export interface EditorProps {
 }
 export const Editor = (props: EditorProps) => {
   const { content, setPost, onBlur } = props;
-  const [editorContent, setEditorContent] = useState<string | null>(null);
-  const handleChange = (newContent: string) => {
-    if (!editorContent) {
-      setEditorContent(content);
-      setPost((prev: typeof initialPost) => ({ ...prev, content: newContent }));
-    } else {
-      setPost((prev: typeof initialPost) => ({ ...prev, content: newContent }));
-    }
-  };
 
   return (
     <StyledEditor
       onBlur={onBlur}
       theme="snow"
       value={content}
-      onChange={handleChange}
+      onChange={(newContent) => setPost((prev: typeof initialPost) => ({ ...prev, content: newContent }))}
       modules={{ toolbar: toolbarOptions, clipboard: clipboardOptions }}
     />
   );

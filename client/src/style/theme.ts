@@ -31,6 +31,7 @@ theme = createTheme(theme, {
         contained: {
           boxShadow: 'none',
           color: 'white',
+          background: theme.palette.primary.main,
           // fontSize: '15px',
           fontWeight: 700,
           // color: '#714900',
